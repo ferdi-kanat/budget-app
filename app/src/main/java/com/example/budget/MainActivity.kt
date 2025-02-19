@@ -13,6 +13,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
@@ -26,7 +27,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 import android.os.Parcelable
+import android.widget.EditText
 import kotlinx.parcelize.Parcelize
+import java.text.SimpleDateFormat
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -54,7 +57,10 @@ class MainActivity : AppCompatActivity() {
         val buttonLoadXLSX: Button = findViewById(R.id.buttonLoadXLSX)
         val buttonClearDatabase: Button = findViewById(R.id.buttonClearDatabase)
         DatabaseProvider.initialize(applicationContext)
-
+        val buttonAddTransaction: Button = findViewById(R.id.buttonAddTransaction)
+        buttonAddTransaction.setOnClickListener {
+            showAddTransactionDialog()
+        }
 
         textViewResult = findViewById(R.id.textViewResult)
         textViewDate = findViewById(R.id.textViewDate)
@@ -82,6 +88,7 @@ class MainActivity : AppCompatActivity() {
                 recyclerView.adapter = transactionAdapter
             }
         }
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -111,6 +118,63 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun showAddTransactionDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_transaction, null)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Yeni Gelir/Gider Ekle")
+            .setView(dialogView)
+            .create()
+
+        val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
+        val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
+        val buttonSaveTransaction = dialogView.findViewById<Button>(R.id.buttonSaveTransaction)
+
+        buttonSaveTransaction.setOnClickListener {
+            val description = editTextDescription.text.toString()
+            val amount = editTextAmount.text.toString().toDoubleOrNull() ?: 0.0
+            saveTransaction(description, amount)
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun saveTransaction(description: String, amount: Double) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val transaction = Transaction(
+                date = getCurrentDate(),
+                time = getCurrentTime(),
+                transactionId = UUID.randomUUID().toString(),
+                amount = amount.toString(),
+                balance = "0.0",
+                description = description
+            )
+            val transactionEntity = TransactionEntity(
+                date = transaction.date,
+                time = transaction.time,
+                transactionId = transaction.transactionId,
+                amount = transaction.amount.toDoubleOrNull() ?: 0.0,
+                balance = transaction.balance.toDoubleOrNull(),
+                description = transaction.description,
+                bankName = "" // Add appropriate bank name if needed
+            )
+            DatabaseProvider.getTransactionDao().insertTransaction(transactionEntity)
+            withContext(Dispatchers.Main) {
+                refreshRecyclerView()
+            }
+        }
+    }
+
+    private fun getCurrentDate(): String {
+        val sdf = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
+    private fun getCurrentTime(): String {
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date())
     }
 
     //pdf dosyasını okuma fonksiyonu
@@ -166,11 +230,20 @@ class MainActivity : AppCompatActivity() {
     private fun refreshRecyclerView() {
         lifecycleScope.launch(Dispatchers.IO) {
             val updatedTransactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+
+            val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+
+            // Tarihleri Date objesine çevirerek sıralama yap
+            val sortedTransactions = updatedTransactions.sortedWith(
+                compareByDescending<TransactionEntity> { dateFormat.parse(it.date) }
+                    .thenByDescending { it.time }
+            )
             withContext(Dispatchers.Main) {
-                transactionAdapter.updateData(updatedTransactions)
+                transactionAdapter.updateData(sortedTransactions)
             }
         }
     }
+
     private fun clearDatabase() {
         lifecycleScope.launch(Dispatchers.IO) {
             DatabaseProvider.getTransactionDao().deleteAllTransactions()

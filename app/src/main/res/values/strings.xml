@@ -13,5 +13,9 @@
     <string name="a_klama">Açıklama</string>
     <string name="veritaban_n_temizle">Veritabanını Temizle</string>
     <string name="save_transactions">Save Transactions</string>
+    <string name="gelir_gider_ekle">Gelir/Gider Ekle</string>
+    <string name="hint_description">Açıklama</string>
+    <string name="hint_amount">Miktar</string>
+    <string name="button_save">Kaydet</string>
 
 </resources>
