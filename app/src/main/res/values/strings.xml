@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Budget</string>
+    <string name="pdf_y_kle">PDF Yükle</string>
+    <string name="sonu_buraya_gelecek">Sonuç buraya gelecek</string>
+    <string name="lastdate">lastDate</string>
+    <string name="xlsx_y_kle">XLSX Yükle</string>
+    <string name="total_amount">Dönem Borcu (VakıfBank): %1$s TL</string>
+    <string name="tutar">Tutar</string>
+    <string name="lem_a_klamas">İşlem Açıklaması</string>
+    <string name="tarih">Tarih</string>
+    <string name="fi_no">Fiş No</string>
+    <string name="kaydet">Kaydet</string>
+    <string name="a_klama">Açıklama</string>
+    <string name="veritaban_n_temizle">Veritabanını Temizle</string>
+    <string name="save_transactions">Save Transactions</string>
+
+</resources>
