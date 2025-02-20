@@ -1,41 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textViewDate"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="@string/tarih" />
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
 
-    <EditText
-        android:id="@+id/editTextDescription"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:autofillHints=""
-        android:hint="@string/a_klama"
-        android:inputType="text"
-        android:minHeight="48dp"
-        android:textColorHint="#8D6E63"
-        tools:ignore="TextFields"
-        android:maxWidth="488dp"
-        />
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/text_color"
+            android:text="@string/tarih" />
 
-    <EditText
-        android:id="@+id/editTextAmount"
-        android:layout_width="0dp"
+        <EditText
+            android:id="@+id/editTextDate"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:minWidth="120dp"
+            android:maxWidth="160dp"
+            android:inputType="date"
+            android:autofillHints="date"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/hint_color"
+            android:hint="@string/hint_date" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:autofillHints=""
-        android:hint="@string/tutar"
-        android:inputType="numberDecimal"
-        android:minHeight="48dp"
-        android:textColorHint="#8D6E63" />
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <EditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="240dp"
+            android:layout_height="48dp"
+            android:inputType="text"
+            android:autofillHints="none"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/hint_color"
+            android:hint="@string/hint_description" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/editTextAmount"
+            android:layout_width="160dp"
+            android:layout_height="48dp"
+            android:inputType="numberDecimal"
+            android:autofillHints="none"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/hint_color"
+            android:hint="@string/hint_amount" />
+    </LinearLayout>
+
 </LinearLayout>

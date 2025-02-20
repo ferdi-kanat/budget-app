@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
@@ -123,46 +124,80 @@ class MainActivity : AppCompatActivity() {
     private fun showAddTransactionDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_transaction, null)
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Yeni Gelir/Gider Ekle")
+            .setTitle(getString(R.string.gelir_gider_ekle))
             .setView(dialogView)
             .create()
 
         val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
         val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
+        val editTextDate = dialogView.findViewById<EditText>(R.id.editTextDate)
         val buttonSaveTransaction = dialogView.findViewById<Button>(R.id.buttonSaveTransaction)
+
+        // Varsayılan olarak günün tarihini göster
+        editTextDate.setText(getCurrentDate())
+
+        // Tarih seçici
+        editTextDate.setOnClickListener {
+            val calendar = Calendar.getInstance()
+            DatePickerDialog(this,
+                { _, year, month, day ->
+                    val selectedDate = String.format("%02d.%02d.%04d", day, month + 1, year)
+                    editTextDate.setText(selectedDate)
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
 
         buttonSaveTransaction.setOnClickListener {
             val description = editTextDescription.text.toString()
             val amount = editTextAmount.text.toString().toDoubleOrNull() ?: 0.0
-            saveTransaction(description, amount)
+            val date = editTextDate.text.toString()
+
+            if (description.isBlank()) {
+                editTextDescription.error = "Açıklama gerekli"
+                return@setOnClickListener
+            }
+
+            if (amount == 0.0) {
+                editTextAmount.error = "Geçerli bir miktar girin"
+                return@setOnClickListener
+            }
+
+            saveTransaction(description, amount, date)
             dialog.dismiss()
         }
 
         dialog.show()
     }
 
-    private fun saveTransaction(description: String, amount: Double) {
+    private fun saveTransaction(description: String, amount: Double, date: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             val transaction = Transaction(
-                date = getCurrentDate(),
+                date = date,
                 time = getCurrentTime(),
                 transactionId = UUID.randomUUID().toString(),
                 amount = amount.toString(),
                 balance = "0.0",
                 description = description
             )
+
             val transactionEntity = TransactionEntity(
                 date = transaction.date,
                 time = transaction.time,
                 transactionId = transaction.transactionId,
-                amount = transaction.amount.toDoubleOrNull() ?: 0.0,
-                balance = transaction.balance.toDoubleOrNull(),
-                description = transaction.description,
-                bankName = "" // Add appropriate bank name if needed
+                amount = amount,
+                balance = null,
+                description = description,
+                bankName = "Manuel Giriş"
             )
+
             DatabaseProvider.getTransactionDao().insertTransaction(transactionEntity)
+
             withContext(Dispatchers.Main) {
                 refreshRecyclerView()
+                Toast.makeText(this@MainActivity, "İşlem kaydedildi", Toast.LENGTH_SHORT).show()
             }
         }
     }

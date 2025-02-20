@@ -17,5 +17,5 @@
     <string name="hint_description">Açıklama</string>
     <string name="hint_amount">Miktar</string>
     <string name="button_save">Kaydet</string>
-
+    <string name="hint_date">GG.AA.YYYY</string>
 </resources>
