@@ -36,14 +36,16 @@ class ExcelParser {
                 description.equals("Açıklama", ignoreCase = true)) {
                 continue
             }
+
             transactions.add(
                 Transaction(
                     date = date,
-                    time = "", // Saat yerine boş string
-                    transactionId = receiptNumber, // Fiş noyu transactionId olarak kaydediyoruz
+                    time = "", // Empty string for time
+                    transactionId = receiptNumber, // Using receipt number as transactionId
                     amount = amount,
                     balance = balance,
-                    description = description
+                    description = description,
+                    bankName = "Bankkart" // Always set as Bankkart for Excel imports
                 )
             )
         }

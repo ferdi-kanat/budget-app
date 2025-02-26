@@ -30,11 +30,15 @@ class EditableTransactionAdapter(private val transactions: MutableList<MainActiv
         holder.editTextAmount.setText(transaction.amount)
 
         holder.editTextDescription.addTextChangedListener {
-            transactions[holder.adapterPosition].description = it.toString()
+            transactions[holder.adapterPosition] = transactions[holder.adapterPosition].copy(
+                description = it.toString()
+            )
         }
 
         holder.editTextAmount.addTextChangedListener {
-            transactions[holder.adapterPosition].amount = it.toString()
+            transactions[holder.adapterPosition] = transactions[holder.adapterPosition].copy(
+                amount = it.toString()
+            )
         }
     }
 

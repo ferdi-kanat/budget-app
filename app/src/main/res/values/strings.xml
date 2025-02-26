@@ -18,4 +18,11 @@
     <string name="hint_amount">Miktar</string>
     <string name="button_save">Kaydet</string>
     <string name="hint_date">GG.AA.YYYY</string>
+    <string name="export_data">Verileri Dışa Aktar</string>
+    <string name="genel_bak">Genel Bakış</string>
+    <string name="kategori_da_l_m">Kategori Dağılımı</string>
+    <string name="analytics">İşlem Analizi</string>
+    <string name="total_income_format">Toplam Gelir: %s</string>
+    <string name="total_expense_format">Toplam Gider: %s</string>
+    <string name="balance_format">Bakiye: %s</string>
 </resources>

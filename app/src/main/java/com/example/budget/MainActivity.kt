@@ -29,8 +29,11 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import android.os.Parcelable
 import android.widget.EditText
+import com.example.budget.utils.ExportUtils
 import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
+import com.example.budget.analytics.TransactionAnalytics
+import com.example.budget.analytics.AnalyticsActivity
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -47,7 +50,11 @@ class MainActivity : AppCompatActivity() {
         "VakıfBank" to "Dönem Borcunuz",
         "Bankkart" to "Dönem Borcu TL"
     )
-
+    companion object {
+        private const val EXCEL_EXPORT_REQUEST_CODE = 3
+        private const val PDF_EXPORT_REQUEST_CODE = 4
+    }
+    private var tempSelectedBank: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -81,6 +88,10 @@ class MainActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerViewTransactions)
         recyclerView.layoutManager = LinearLayoutManager(this)
 
+        val buttonExport: Button = findViewById(R.id.buttonExport)
+        buttonExport.setOnClickListener {
+            showExportDialog()
+        }
         // Verileri yüklemek için LifecycleScope başlat
         lifecycleScope.launch(Dispatchers.IO) {
             val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
@@ -90,6 +101,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val buttonAnalytics: Button = findViewById(R.id.buttonAnalytics)
+        buttonAnalytics.setOnClickListener {
+            launchAnalytics()
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -100,16 +115,44 @@ class MainActivity : AppCompatActivity() {
             when (requestCode) {
                 pdfRequestCode -> processPdfText(data.data ?: return)
                 xlsxRequestCode -> processExcelFile(data.data ?: return)
+                EXCEL_EXPORT_REQUEST_CODE, PDF_EXPORT_REQUEST_CODE -> {
+                    val uri = data.data ?: return
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                        val exportUtils = ExportUtils()
+
+                        try {
+                            if (requestCode == EXCEL_EXPORT_REQUEST_CODE) {
+                                exportUtils.exportToExcel(this@MainActivity, transactions, uri, tempSelectedBank)
+                            } else {
+                                exportUtils.exportToPDF(this@MainActivity, transactions, uri, tempSelectedBank)
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Dışa aktarma başarılı",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "Dışa aktarma başarısız: ${e.message}",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                        // Reset the temporary selected bank
+                        tempSelectedBank = null
+                    }
+                }
                 editRequestCode -> {
-                    // Get the updated transactions
                     val updatedTransactions = data.getParcelableArrayListExtra<Transaction>("updatedTransactions")
                     if (updatedTransactions != null) {
-                        // Save to database using coroutine
                         lifecycleScope.launch(Dispatchers.IO) {
-                            // Save transactions to database
-                            saveTransactionsToDatabase(updatedTransactions, "VakıfBank") // or appropriate bank name
-
-                            // Refresh the UI on main thread
+                            saveTransactionsToDatabase(updatedTransactions)
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(this@MainActivity, "İşlemler kaydedildi", Toast.LENGTH_SHORT).show()
                                 refreshRecyclerView()
@@ -236,25 +279,27 @@ class MainActivity : AppCompatActivity() {
         try {
             val excelParser = ExcelParser()
             val transactions = excelParser.readXLSXFile(uri, contentResolver)
-            launchEditActivity(transactions)
+            launchEditActivity(transactions, "Bankkart")
         } catch (e: Exception) {
             Log.e("EXCEL_ERROR", "Excel dosyası okunurken hata oluştu: ${e.message}")
             Toast.makeText(this, "Excel dosyası okunamadı!", Toast.LENGTH_LONG).show()
         }
     }
     //veritabanına kaydetme işlemi
-    private suspend fun saveTransactionsToDatabase(transactions: List<Transaction>, bankName: String) {
+    private suspend fun saveTransactionsToDatabase(transactions: List<Transaction>) {
+        val dao = DatabaseProvider.getTransactionDao()
         transactions.forEach { transaction ->
-            val transactionEntity = TransactionEntity(
-                date = transaction.date,
-                time = if (bankName == "Ziraat Bankası") null else transaction.time, // Ziraat için saat yok
-                transactionId = transaction.transactionId, // Ziraat için fiş no burada olacak
-                amount = transaction.amount.toDoubleOrNull() ?: 0.0,
-                balance = transaction.balance.toDoubleOrNull(),
-                description = transaction.description,
-                bankName = bankName
+            dao.insertTransaction(
+                TransactionEntity(
+                    date = transaction.date,
+                    time = transaction.time,
+                    transactionId = transaction.transactionId,
+                    amount = transaction.amount.toDouble(),
+                    balance = transaction.balance.toDouble(),
+                    description = transaction.description,
+                    bankName = transaction.bankName
+                )
             )
-            DatabaseProvider.getTransactionDao().insertTransaction(transactionEntity)
         }
         withContext(Dispatchers.Main) {
             Toast.makeText(this@MainActivity, "${transactions.size} işlem veritabanına kaydedildi!", Toast.LENGTH_SHORT).show()
@@ -323,7 +368,8 @@ class MainActivity : AppCompatActivity() {
         val transactionId: String,
         var amount: String,
         val balance: String,
-        var description: String
+        var description: String,
+        val bankName: String = "VakıfBank" // Add default value for backward compatibility
     ) : Parcelable
 
     private fun extractTransactions(text: String): List<Transaction> {
@@ -362,16 +408,86 @@ class MainActivity : AppCompatActivity() {
         textViewResult.text = "Dönem Borcu ($bankName): $totalAmount TL"
         textViewDate.text = "Son Ödeme Tarihi ($bankName): $lastDate"
     }
-    private fun handleBankTransactions(bankName: String, pdfText: String) {
+    /*private fun handleBankTransactions(bankName: String, pdfText: String) {
         val transactions = extractTransactions(pdfText)
         lifecycleScope.launch(Dispatchers.IO) {
             saveTransactionsToDatabase(transactions, bankName)
         }
+    }*/
+    private fun showExportDialog() {
+        // First, get unique bank names from database
+        lifecycleScope.launch(Dispatchers.IO) {
+            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+            val bankNames = transactions.map { it.bankName }.distinct()
+
+            withContext(Dispatchers.Main) {
+                val options = mutableListOf("Tüm Bankalar")
+                options.addAll(bankNames)
+
+                AlertDialog.Builder(this@MainActivity)
+                    .setTitle("Banka Seçin")
+                    .setItems(options.toTypedArray()) { _, bankIndex ->
+                        val selectedBank = if (bankIndex == 0) null else options[bankIndex]
+                        showExportFormatDialog(selectedBank)
+                    }
+                    .show()
+            }
+        }
     }
-    private fun launchEditActivity(transactions: List<Transaction>) {
+
+    private fun showExportFormatDialog(selectedBank: String?) {
+        val options = arrayOf("Excel'e Aktar", "PDF'e Aktar")
+        AlertDialog.Builder(this)
+            .setTitle("Dışa Aktarma Formatı")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> exportToExcel(selectedBank)
+                    1 -> exportToPDF(selectedBank)
+                }
+            }
+            .show()
+    }
+
+    private fun exportToExcel(selectedBank: String?) {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            val filename = if (selectedBank != null) {
+                "transactions_${selectedBank}_${getCurrentDateTime()}.xlsx"
+            } else {
+                "transactions_all_banks_${getCurrentDateTime()}.xlsx"
+            }
+            putExtra(Intent.EXTRA_TITLE, filename)
+        }
+        startActivityForResult(intent, EXCEL_EXPORT_REQUEST_CODE)
+        // Store selected bank for use in onActivityResult
+        tempSelectedBank = selectedBank
+    }
+
+    private fun exportToPDF(selectedBank: String?) {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/pdf"
+            val filename = if (selectedBank != null) {
+                "transactions_${selectedBank}_${getCurrentDateTime()}.pdf"
+            } else {
+                "transactions_all_banks_${getCurrentDateTime()}.pdf"
+            }
+            putExtra(Intent.EXTRA_TITLE, filename)
+        }
+        startActivityForResult(intent, PDF_EXPORT_REQUEST_CODE)
+        // Store selected bank for use in onActivityResult
+        tempSelectedBank = selectedBank
+    }
+
+    private fun getCurrentDateTime(): String {
+        return SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    }
+    private fun launchEditActivity(transactions: List<Transaction>, bankName: String = "VakıfBank") {
         val intent = Intent(this, EditTransactionsActivity::class.java)
         intent.putExtra("transactions", ArrayList(transactions))
-        startActivityForResult(intent, editRequestCode) // 100, özel bir istek kodudur
+        intent.putExtra("bankName", bankName)
+        startActivityForResult(intent, editRequestCode)
     }
     // İzin kontrolü
     private fun checkPermissions() {
@@ -418,6 +534,17 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "İzin reddedildi!", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun launchAnalytics() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+            val analytics = TransactionAnalytics().analyzeTransactions(transactions)
+            
+            val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
+            intent.putExtra("analytics", analytics)
+            startActivity(intent)
         }
     }
 }
