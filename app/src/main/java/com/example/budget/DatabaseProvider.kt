@@ -1,14 +1,17 @@
 package com.example.budget
 
 import android.content.Context
+import androidx.room.Room
 
 object DatabaseProvider {
     private var database: AppDatabase? = null
 
     fun initialize(context: Context) {
-        if (database == null) {
-            database = AppDatabase.getDatabase(context)
-        }
+        database = Room.databaseBuilder(
+            context.applicationContext,
+            AppDatabase::class.java,
+            "budget_database"
+        ).build()
     }
 
     fun getTransactionDao(): TransactionDao {

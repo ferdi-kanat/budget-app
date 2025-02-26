@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.Button
+import android.widget.Toast
 
 @Suppress("DEPRECATION")
 class EditTransactionsActivity : AppCompatActivity() {
@@ -28,10 +29,14 @@ class EditTransactionsActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         buttonSave.setOnClickListener {
-            val resultIntent = Intent()
-            resultIntent.putParcelableArrayListExtra("updatedTransactions", ArrayList(transactions))
-            setResult(Activity.RESULT_OK, resultIntent)
-            finish()
+            if (transactions.isNotEmpty()) {
+                val resultIntent = Intent()
+                resultIntent.putParcelableArrayListExtra("updatedTransactions", ArrayList(transactions))
+                setResult(Activity.RESULT_OK, resultIntent)
+                finish()
+            } else {
+                Toast.makeText(this, "No transactions to save", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

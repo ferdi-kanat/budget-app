@@ -1,39 +1,45 @@
 package com.example.budget
 
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import android.Manifest
-import android.app.Activity
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
-import android.util.Log
+import android.os.Build
+import android.os.Bundle
+import android.os.Parcelable
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.budget.analytics.AnalyticsActivity
+import com.example.budget.analytics.TransactionAnalytics
 import com.example.budget.parsers.ExcelParser
 import com.example.budget.parsers.PDFParser
+import com.example.budget.utils.ExportUtils
 import com.example.budget.utils.RegexPatterns
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.*
-import android.os.Parcelable
-import android.widget.EditText
-import com.example.budget.utils.ExportUtils
 import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
-import com.example.budget.analytics.TransactionAnalytics
-import com.example.budget.analytics.AnalyticsActivity
+import java.util.*
+import androidx.appcompat.widget.SearchView
+import android.app.Activity
+import android.util.Log
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -53,109 +59,205 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val EXCEL_EXPORT_REQUEST_CODE = 3
         private const val PDF_EXPORT_REQUEST_CODE = 4
+        private const val EDIT_TRANSACTIONS_REQUEST = 100
     }
     private var tempSelectedBank: String? = null
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var progressIndicator: CircularProgressIndicator
+    private lateinit var searchView: SearchView
+    private var tempExportType: ExportType? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        DatabaseProvider.initialize(this)
+        initializeViews()
+        setupListeners()
+        initializeAdapter()
+    }
 
+    private fun initializeViews() {
+        textViewResult = findViewById(R.id.textViewResult)
+        textViewDate = findViewById(R.id.textViewDate)
+        recyclerView = findViewById(R.id.recyclerViewTransactions)
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+        progressIndicator = findViewById(R.id.progressIndicator)
+        searchView = findViewById(R.id.searchBar)
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        setupSearch()
+        setupSwipeRefresh()
+    }
+
+    private fun initializeAdapter() {
+        transactionAdapter = TransactionAdapter(mutableListOf())
+        recyclerView.adapter = transactionAdapter
+        loadTransactions()
+    }
+
+    private fun setupListeners() {
+        setupButtons()
         checkPermissions()
+    }
 
-        val buttonLoadPDF: Button = findViewById(R.id.buttonLoadPDF)
-        val buttonLoadXLSX: Button = findViewById(R.id.buttonLoadXLSX)
-        val buttonClearDatabase: Button = findViewById(R.id.buttonClearDatabase)
-        DatabaseProvider.initialize(applicationContext)
-        val buttonAddTransaction: Button = findViewById(R.id.buttonAddTransaction)
-        buttonAddTransaction.setOnClickListener {
+    private fun setupSwipeRefresh() {
+        swipeRefreshLayout.setOnRefreshListener {
+            loadTransactions()
+        }
+    }
+
+    private fun setupSearch() {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let { filterTransactions(it) }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                newText?.let { filterTransactions(it) }
+                return true
+            }
+        })
+    }
+
+    private fun setupButtons() {
+        findViewById<Button>(R.id.buttonAddTransaction).setOnClickListener {
             showAddTransactionDialog()
         }
 
-        textViewResult = findViewById(R.id.textViewResult)
-        textViewDate = findViewById(R.id.textViewDate)
-        buttonLoadPDF.setOnClickListener {
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "application/pdf"
+        findViewById<Button>(R.id.buttonLoadPDF).setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "application/pdf"
+            }
             startActivityForResult(intent, pdfRequestCode)
         }
-        buttonLoadXLSX.setOnClickListener {
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            startActivityForResult(intent, xlsxRequestCode) // xlsxRequestCode = 2
-        }
-        buttonClearDatabase.setOnClickListener {
-            clearDatabase()
-        }
-        recyclerView = findViewById(R.id.recyclerViewTransactions)
-        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val buttonExport: Button = findViewById(R.id.buttonExport)
-        buttonExport.setOnClickListener {
+        findViewById<Button>(R.id.buttonLoadXLSX).setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+            startActivityForResult(intent, xlsxRequestCode)
+        }
+
+        findViewById<Button>(R.id.buttonClearDatabase).setOnClickListener {
+            showClearDatabaseConfirmation()
+        }
+
+        findViewById<Button>(R.id.buttonExport).setOnClickListener {
             showExportDialog()
         }
-        // Verileri yüklemek için LifecycleScope başlat
-        lifecycleScope.launch(Dispatchers.IO) {
-            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
-            withContext(Dispatchers.Main) {
-                transactionAdapter = TransactionAdapter(transactions)
-                recyclerView.adapter = transactionAdapter
-            }
-        }
 
-        val buttonAnalytics: Button = findViewById(R.id.buttonAnalytics)
-        buttonAnalytics.setOnClickListener {
+        findViewById<Button>(R.id.buttonAnalytics).setOnClickListener {
             launchAnalytics()
         }
     }
 
-    @SuppressLint("SetTextI18n")
+    private fun showLoading() {
+        progressIndicator.visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        progressIndicator.visibility = View.GONE
+        swipeRefreshLayout.isRefreshing = false
+    }
+
+    private fun loadTransactions() {
+        showLoading()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                withContext(Dispatchers.Main) {
+                    if (transactions.isEmpty()) {
+                        showError("No transactions found")
+                    } else {
+                        transactionAdapter.updateData(transactions)
+                        recyclerView.scrollToPosition(0)
+                    }
+                    hideLoading()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    showError("Error loading transactions: ${e.message}")
+                }
+            }
+        }
+    }
+
+    private fun filterTransactions(query: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val filteredTransactions = DatabaseProvider.getTransactionDao()
+                .getAllTransactions()
+                .filter { transaction ->
+                    transaction.description.contains(query, ignoreCase = true) ||
+                    transaction.amount.toString().contains(query)
+                }
+            withContext(Dispatchers.Main) {
+                transactionAdapter.updateData(filteredTransactions)
+            }
+        }
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            message,
+            Snackbar.LENGTH_LONG
+        ).setAction("Retry") {
+            loadTransactions()
+        }.show()
+    }
+
+    private fun showClearDatabaseConfirmation() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.clear_database_title)
+            .setMessage(R.string.clear_database_message)
+            .setPositiveButton(R.string.clear) { _, _ -> clearDatabase() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK && data != null) {
+        if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                pdfRequestCode -> processPdfText(data.data ?: return)
-                xlsxRequestCode -> processExcelFile(data.data ?: return)
-                EXCEL_EXPORT_REQUEST_CODE, PDF_EXPORT_REQUEST_CODE -> {
-                    val uri = data.data ?: return
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
-                        val exportUtils = ExportUtils()
-
-                        try {
-                            if (requestCode == EXCEL_EXPORT_REQUEST_CODE) {
-                                exportUtils.exportToExcel(this@MainActivity, transactions, uri, tempSelectedBank)
-                            } else {
-                                exportUtils.exportToPDF(this@MainActivity, transactions, uri, tempSelectedBank)
-                            }
-
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "Dışa aktarma başarılı",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "Dışa aktarma başarısız: ${e.message}",
-                                    Toast.LENGTH_LONG
-                                ).show()
+                EDIT_TRANSACTIONS_REQUEST -> {
+                    @Suppress("DEPRECATION")
+                    data?.getParcelableArrayListExtra<Transaction>("updatedTransactions")?.let { transactions ->
+                        lifecycleScope.launch {
+                            try {
+                                saveTransactionsToDatabase(transactions)
+                                refreshRecyclerView()
+                                showSuccess("İşlemler başarıyla kaydedildi")
+                            } catch (e: Exception) {
+                                Log.e("SAVE_ERROR", "Kaydetme hatası", e)
+                                showError("Kaydetme hatası: ${e.message}")
                             }
                         }
-                        // Reset the temporary selected bank
-                        tempSelectedBank = null
                     }
                 }
-                editRequestCode -> {
-                    val updatedTransactions = data.getParcelableArrayListExtra<Transaction>("updatedTransactions")
-                    if (updatedTransactions != null) {
+                pdfRequestCode -> {
+                    data?.data?.let { uri -> handlePdfFile(uri) }
+                }
+                xlsxRequestCode -> {
+                    data?.data?.let { uri -> handleXlsxFile(uri) }
+                }
+                EXCEL_EXPORT_REQUEST_CODE, PDF_EXPORT_REQUEST_CODE -> {
+                    data?.data?.let { uri ->
                         lifecycleScope.launch(Dispatchers.IO) {
-                            saveTransactionsToDatabase(updatedTransactions)
-                            withContext(Dispatchers.Main) {
-                                Toast.makeText(this@MainActivity, "İşlemler kaydedildi", Toast.LENGTH_SHORT).show()
-                                refreshRecyclerView()
+                            try {
+                                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                                handleExport(uri, transactions)
+                                tempSelectedBank = null
+                                withContext(Dispatchers.Main) {
+                                    showSuccess("Dışa aktarma başarılı")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("EXPORT_ERROR", "Dışa aktarma hatası", e)
+                                withContext(Dispatchers.Main) {
+                                    showError("Dışa aktarma hatası: ${e.message}")
+                                }
                             }
                         }
                     }
@@ -257,69 +359,95 @@ class MainActivity : AppCompatActivity() {
 
     //pdf dosyasını okuma fonksiyonu
     @SuppressLint("SetTextI18n")
-    fun processPdfText(uri: Uri) {
-        val pdfText = pdfParser.extractText(uri, contentResolver)
-        for ((bankName, keyword) in supportedBanks) {
-            if (pdfText.contains(bankName, ignoreCase = true)) {
-                if (pdfText.contains(keyword)) {
-                    handleCreditCardStatement(bankName, pdfText)
-                } else {
-                    val transactions = extractTransactions(pdfText)
-                    launchEditActivity(transactions)
+    fun handlePdfFile(uri: Uri) {
+        showLoading()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val pdfText = pdfParser.extractText(uri, contentResolver)
+                Log.d("DEBUG", "PDF Text: $pdfText") // Debug için PDF içeriğini logla
+                
+                var bankFound = false
+                // Check for supported banks first
+                for ((bankName, keyword) in supportedBanks) {
+                    if (pdfText.contains(bankName, ignoreCase = true)) {
+                        bankFound = true
+                        withContext(Dispatchers.Main) {
+                            if (pdfText.contains(keyword)) {
+                                handleCreditCardStatement(bankName, pdfText)
+                            } else {
+                                val transactions = extractTransactions(pdfText)
+                                Log.d("DEBUG", "Extracted transactions: $transactions") // Debug için işlemleri logla
+                                if (transactions.isNotEmpty()) {
+                                    launchEditActivity(transactions)
+                                } else {
+                                    showError("İşlem bulunamadı")
+                                }
+                            }
+                            hideLoading()
+                        }
+                        break  // Banka bulunduğunda döngüden çık
+                    }
                 }
-                return
+                
+                // Sadece banka bulunamadığında hata mesajı göster
+                if (!bankFound) {
+                    withContext(Dispatchers.Main) {
+                        hideLoading()
+                        showError("Bu bankayı desteklemiyoruz.")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("PDF_ERROR", "PDF işleme hatası", e) // Detaylı hata logu
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    showError("PDF işleme hatası: ${e.message}")
+                }
             }
         }
-        textViewResult.text = "Bu bankayı desteklemiyoruz."
-        textViewDate.text = ""
     }
 
     //excel dosyasını okuma fonksiyonu
-    private fun processExcelFile(uri: Uri) {
-        try {
-            val excelParser = ExcelParser()
-            val transactions = excelParser.readXLSXFile(uri, contentResolver)
-            launchEditActivity(transactions, "Bankkart")
-        } catch (e: Exception) {
-            Log.e("EXCEL_ERROR", "Excel dosyası okunurken hata oluştu: ${e.message}")
-            Toast.makeText(this, "Excel dosyası okunamadı!", Toast.LENGTH_LONG).show()
+    private fun handleXlsxFile(uri: Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val excelParser = ExcelParser()
+                val transactions = excelParser.readXLSXFile(uri, contentResolver)
+                launchEditActivity(transactions, "Bankkart")
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showError(e.message ?: "Error processing XLSX file")
+                }
+            }
         }
     }
     //veritabanına kaydetme işlemi
     private suspend fun saveTransactionsToDatabase(transactions: List<Transaction>) {
+        showLoading()
         val dao = DatabaseProvider.getTransactionDao()
         transactions.forEach { transaction ->
-            dao.insertTransaction(
-                TransactionEntity(
-                    date = transaction.date,
-                    time = transaction.time,
-                    transactionId = transaction.transactionId,
-                    amount = transaction.amount.toDouble(),
-                    balance = transaction.balance.toDouble(),
-                    description = transaction.description,
-                    bankName = transaction.bankName
-                )
+            val entity = TransactionEntity(
+                transactionId = transaction.transactionId,
+                date = transaction.date,
+                time = transaction.time,
+                description = transaction.description,
+                amount = transaction.amount.toDouble(),
+                balance = transaction.balance.toDoubleOrNull() ?: 0.0,
+                bankName = transaction.bankName
             )
+            dao.insertTransaction(entity)
         }
         withContext(Dispatchers.Main) {
-            Toast.makeText(this@MainActivity, "${transactions.size} işlem veritabanına kaydedildi!", Toast.LENGTH_SHORT).show()
-            refreshRecyclerView()
+            hideLoading()
+            loadTransactions()
+            showSuccess("Transactions saved successfully")
         }
     }
 
     private fun refreshRecyclerView() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val updatedTransactions = DatabaseProvider.getTransactionDao().getAllTransactions()
-
-            val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
-            // Tarihleri Date objesine çevirerek sıralama yap
-            val sortedTransactions = updatedTransactions.sortedWith(
-                compareByDescending<TransactionEntity> { dateFormat.parse(it.date) }
-                    .thenByDescending { it.time }
-            )
+            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
             withContext(Dispatchers.Main) {
-                transactionAdapter.updateData(sortedTransactions)
+                transactionAdapter.updateData(transactions)
             }
         }
     }
@@ -441,8 +569,14 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Dışa Aktarma Formatı")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> exportToExcel(selectedBank)
-                    1 -> exportToPDF(selectedBank)
+                    0 -> {
+                        tempExportType = ExportType.EXCEL
+                        exportToExcel(selectedBank)
+                    }
+                    1 -> {
+                        tempExportType = ExportType.PDF
+                        exportToPDF(selectedBank)
+                    }
                 }
             }
             .show()
@@ -541,10 +675,39 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
             val analytics = TransactionAnalytics().analyzeTransactions(transactions)
-            
+
             val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
             intent.putExtra("analytics", analytics)
             startActivity(intent)
         }
+    }
+
+    private fun handleExport(uri: Uri, transactions: List<TransactionEntity>) {
+        try {
+            when (tempExportType) {
+                ExportType.EXCEL -> ExportUtils().exportToExcel(this@MainActivity, transactions, uri, tempSelectedBank)
+                ExportType.PDF -> ExportUtils().exportToPDF(this@MainActivity, transactions, uri, tempSelectedBank)
+                null -> throw IllegalStateException("Export type not set")
+            }
+        } catch (e: Exception) {
+            Log.e("EXPORT_ERROR", "Export failed", e)
+            throw e
+        } finally {
+            tempExportType = null
+            tempSelectedBank = null
+        }
+    }
+
+    private enum class ExportType {
+        EXCEL,
+        PDF
+    }
+
+    private fun showSuccess(message: String) {
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            message,
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 }

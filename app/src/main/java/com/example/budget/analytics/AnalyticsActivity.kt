@@ -9,12 +9,15 @@ import com.example.budget.R
 import java.text.NumberFormat
 import java.util.Locale
 import android.os.Build
+import android.view.View
+import android.widget.ProgressBar
 
 class AnalyticsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_analytics)
+        showLoading()
 
         val analytics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getSerializableExtra("analytics", AnalyticsResult::class.java)
@@ -25,6 +28,8 @@ class AnalyticsActivity : AppCompatActivity() {
 
         setupGeneralOverview(analytics)
         setupCategoryBreakdown(analytics)
+
+        hideLoading()
     }
 
     private fun setupGeneralOverview(analytics: AnalyticsResult) {
@@ -42,5 +47,13 @@ class AnalyticsActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewCategories)
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = CategoryAdapter(analytics.categoryBreakdown)
+    }
+
+    private fun showLoading() {
+        findViewById<ProgressBar>(R.id.progressBar).visibility = View.VISIBLE
+    }
+
+    private fun hideLoading() {
+        findViewById<ProgressBar>(R.id.progressBar).visibility = View.GONE
     }
 } 

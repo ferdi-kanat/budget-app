@@ -24,13 +24,13 @@
             android:id="@+id/editTextDate"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:minWidth="120dp"
-            android:maxWidth="160dp"
-            android:inputType="date"
             android:autofillHints="date"
+            android:hint="@string/hint_date"
+            android:inputType="date"
+            android:maxWidth="160dp"
+            android:minWidth="120dp"
             android:textColor="@color/text_color"
-            android:textColorHint="@color/hint_color"
-            android:hint="@string/hint_date" />
+            android:textColorHint="#616161" />
     </LinearLayout>
 
     <LinearLayout
@@ -43,11 +43,11 @@
             android:id="@+id/editTextDescription"
             android:layout_width="240dp"
             android:layout_height="48dp"
-            android:inputType="text"
             android:autofillHints="none"
+            android:hint="@string/hint_description"
+            android:inputType="text"
             android:textColor="@color/text_color"
-            android:textColorHint="@color/hint_color"
-            android:hint="@string/hint_description" />
+            android:textColorHint="#616161" />
     </LinearLayout>
 
     <LinearLayout
@@ -59,11 +59,11 @@
             android:id="@+id/editTextAmount"
             android:layout_width="160dp"
             android:layout_height="48dp"
-            android:inputType="numberDecimal"
             android:autofillHints="none"
+            android:hint="@string/hint_amount"
+            android:inputType="numberDecimal"
             android:textColor="@color/text_color"
-            android:textColorHint="@color/hint_color"
-            android:hint="@string/hint_amount" />
+            android:textColorHint="#616161" />
     </LinearLayout>
 
 </LinearLayout>

@@ -1,16 +1,11 @@
 <resources>
     <string name="app_name">Budget</string>
     <string name="pdf_y_kle">PDF Yükle</string>
-    <string name="sonu_buraya_gelecek">Sonuç buraya gelecek</string>
-    <string name="lastdate">lastDate</string>
     <string name="xlsx_y_kle">XLSX Yükle</string>
-    <string name="total_amount">Dönem Borcu (VakıfBank): %1$s TL</string>
     <string name="tutar">Tutar</string>
     <string name="lem_a_klamas">İşlem Açıklaması</string>
     <string name="tarih">Tarih</string>
     <string name="fi_no">Fiş No</string>
-    <string name="kaydet">Kaydet</string>
-    <string name="a_klama">Açıklama</string>
     <string name="veritaban_n_temizle">Veritabanını Temizle</string>
     <string name="save_transactions">Save Transactions</string>
     <string name="gelir_gider_ekle">Gelir/Gider Ekle</string>
@@ -25,4 +20,17 @@
     <string name="total_income_format">Toplam Gelir: %s</string>
     <string name="total_expense_format">Toplam Gider: %s</string>
     <string name="balance_format">Bakiye: %s</string>
+    <string name="clear_database_title">Veritabanını Temizle</string>
+    <string name="clear_database_message">Tüm işlemler silinecek. Emin misiniz?</string>
+    <string name="clear">Temizle</string>
+    <string name="cancel">İptal</string>
+    <string name="search_transactions">İşlemlerde ara…</string>
+    <string name="add_transaction_description">Add new income or expense</string>
+    <string name="clear_database_description">Clear all transactions from database</string>
+    <string name="analytics_description">View transaction analytics and reports</string>
+    <string name="load_pdf_description">Import transactions from PDF file</string>
+    <string name="load_xlsx_description">Import transactions from Excel file</string>
+    <string name="export_data_description">Export transactions to file</string>
+    <string name="settings">Ayarlar</string>
+    <string name="home">Anasayfa</string>
 </resources>
