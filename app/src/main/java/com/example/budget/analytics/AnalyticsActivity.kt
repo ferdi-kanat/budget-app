@@ -22,6 +22,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.graphics.Color
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.formatter.DefaultValueFormatter
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 
 class AnalyticsActivity : AppCompatActivity() {
     private lateinit var analytics: AnalyticsResult
@@ -62,6 +66,12 @@ class AnalyticsActivity : AppCompatActivity() {
             setTouchEnabled(true)
             isDragEnabled = true
             setScaleEnabled(true)
+            legend.isEnabled = true
+            xAxis.granularity = 1f
+            xAxis.valueFormatter = IndexAxisValueFormatter(
+                arrayOf("Oca", "Şub", "Mar", "Nis", "May", "Haz", 
+                       "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara")
+            )
         }
 
         categoryChart.apply {
@@ -69,8 +79,13 @@ class AnalyticsActivity : AppCompatActivity() {
             setUsePercentValues(true)
             centerText = "Harcama\nDağılımı"
             setCenterTextSize(14f)
-            setDrawEntryLabels(false)
+            setDrawEntryLabels(true)
             legend.isEnabled = true
+            legend.orientation = Legend.LegendOrientation.VERTICAL
+            legend.verticalAlignment = Legend.LegendVerticalAlignment.CENTER
+            legend.horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
+            setEntryLabelColor(Color.WHITE)
+            setEntryLabelTextSize(12f)
         }
 
         bankChart.apply {
@@ -131,14 +146,20 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private fun prepareMonthlyData(): LineData {
         val entries = analytics.monthlyBreakdown.entries
-            .sortedBy { it.key }
-            .map { Entry(it.key.substring(5).toFloat(), it.value.toFloat()) }
+            .map { (key, value) ->
+                // "YYYY.MM" formatını ay olarak parse et
+                val month = key.split(".")[1].toFloat()
+                Entry(month, value.toFloat())
+            }
+            .sortedBy { it.x }
 
         return LineData(LineDataSet(entries, "Aylık Harcama").apply {
             color = getColor(R.color.primary)
             valueTextSize = 12f
             setDrawFilled(true)
             fillColor = getColor(R.color.primary_light)
+            setDrawValues(true) // Değerleri göster
+            valueFormatter = DefaultValueFormatter(0) // Tam sayı formatı
         })
     }
 
@@ -155,14 +176,23 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private fun prepareCategoryData(): PieData {
         val entries = analytics.categoryBreakdown.entries
-            .filter { it.value < 0 } // Sadece harcamaları göster
-            .map { PieEntry(abs(it.value.toFloat()), it.key) }
+            .filter { it.value > 0 } // Sadece pozitif değerleri göster
+            .map { PieEntry(it.value.toFloat(), it.key) }
+            .sortedByDescending { it.value }
 
-        return PieData(PieDataSet(entries, "Kategori Dağılımı").apply {
+        val dataSet = PieDataSet(entries, "Kategori Dağılımı").apply {
             colors = ColorTemplate.MATERIAL_COLORS.toList()
             valueTextSize = 12f
-            valueFormatter = PercentFormatter(findViewById(R.id.categoryChart))
-        })
+            valueFormatter = PercentFormatter(categoryChart)
+            setDrawValues(true)
+            valueTextColor = Color.WHITE
+        }
+
+        return PieData(dataSet).apply {
+            setValueFormatter(PercentFormatter())
+            setValueTextSize(12f)
+            setValueTextColor(Color.WHITE)
+        }
     }
 
     private fun prepareBankData(): BarData {

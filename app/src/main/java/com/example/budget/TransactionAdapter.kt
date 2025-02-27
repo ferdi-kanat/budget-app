@@ -13,6 +13,16 @@ import com.google.android.material.chip.Chip
 class TransactionAdapter(private var transactions: List<TransactionEntity>) :
     RecyclerView.Adapter<TransactionAdapter.ViewHolder>() {
 
+    private var onItemClickListener: ((TransactionEntity) -> Unit)? = null
+
+    init {
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long {
+        return transactions[position].transactionId.hashCode().toLong()
+    }
+
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val description: TextView = view.findViewById(R.id.textViewDescription)
         val date: TextView = view.findViewById(R.id.textViewDate)
@@ -46,6 +56,11 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
             chipBackgroundColor = ColorStateList.valueOf(transaction.category.color)
             setTextColor(Color.WHITE)
         }
+
+        // Add click listener to the entire item
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.invoke(transaction)
+        }
     }
 
     override fun getItemCount() = transactions.size
@@ -56,6 +71,10 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
         
         transactions = newTransactions
         diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun setOnItemClickListener(listener: (TransactionEntity) -> Unit) {
+        onItemClickListener = listener
     }
 
     private class TransactionDiffCallback(

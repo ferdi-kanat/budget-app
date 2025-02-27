@@ -33,4 +33,8 @@
     <string name="export_data_description">Export transactions to file</string>
     <string name="settings">Ayarlar</string>
     <string name="home">Anasayfa</string>
+    <string name="transaction_id_format">ID: %s</string>
+    <string name="amount_format">%.2f ₺</string>
+    <string name="transaction_category_content_description">Transaction category</string>
+    <string name="transaction_category_with_name">Transaction category: %s</string>
 </resources>

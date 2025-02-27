@@ -2,16 +2,9 @@ package com.example.budget.analytics
 
 import com.example.budget.TransactionEntity
 import org.apache.commons.math3.util.FastMath.abs
+import java.util.Collections
 
 class TransactionAnalytics {
-    private val categories = mapOf(
-        "MARKET" to listOf("market", "grocery", "carrefour", "migros", "bim", "a101"),
-        "YEMEK" to listOf("restaurant", "cafe", "yemek", "food"),
-        "ULAŞIM" to listOf("akbil", "benzin", "taksi", "uber"),
-        "FATURA" to listOf("elektrik", "su", "doğalgaz", "internet", "telefon"),
-        "ALIŞVERİŞ" to listOf("giyim", "shopping", "hepsiburada", "trendyol")
-    )
-
     fun analyzeTransactions(transactions: List<TransactionEntity>): AnalyticsResult {
         val totalIncome = transactions.filter { it.amount > 0 }.sumOf { it.amount }
         val totalExpense = transactions.filter { it.amount < 0 }.sumOf { it.amount }
@@ -32,28 +25,26 @@ class TransactionAnalytics {
     }
 
     private fun calculateCategoryBreakdown(transactions: List<TransactionEntity>): Map<String, Double> {
-        return transactions
-            .groupBy { determineCategory(it.description.lowercase()) }
+        val categoryMap = transactions
+            .filter { it.amount < 0 } // Önce sadece harcamaları filtrele
+            .groupBy { it.category.displayName } // TransactionCategory'nin displayName'ini kullan
             .mapValues { (_, transactions) -> 
-                transactions.filter { it.amount < 0 }.sumOf { abs(it.amount) }
+                transactions.sumOf { abs(it.amount) }
             }
-    }
-
-    private fun determineCategory(description: String): String {
-        categories.forEach { (category, keywords) ->
-            if (keywords.any { description.contains(it) }) {
-                return category
-            }
-        }
-        return "DİĞER"
+        
+        return categoryMap.filterValues { it > 0 } // Sıfırdan büyük değerleri filtrele
     }
 
     private fun calculateMonthlyTotals(transactions: List<TransactionEntity>): Map<String, Double> {
         return transactions
-            .groupBy { it.date.substring(3, 10) } // "DD.MM.YYYY" -> "MM.YYYY"
+            .groupBy { 
+                val parts = it.date.split(".")
+                "${parts[2]}.${parts[1]}"
+            }
             .mapValues { (_, transactions) -> 
                 transactions.sumOf { it.amount }
             }
+            .toSortedMap(Collections.reverseOrder())
     }
 
     private fun calculateBankwiseTotal(transactions: List<TransactionEntity>): Map<String, Double> {

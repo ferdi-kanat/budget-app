@@ -4,7 +4,10 @@ import android.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 @Entity(
     tableName = "transactions",
     indices = [Index(value = ["transactionId"], unique = true)]
@@ -19,9 +22,10 @@ data class TransactionEntity(
     val balance: Double?,
     val bankName: String,
     val category: TransactionCategory = TransactionCategory.OTHER
-)
+) : Parcelable
 
-enum class TransactionCategory(val color: Int, val displayName: String) {
+@Parcelize
+enum class TransactionCategory(val color: Int, val displayName: String) : Parcelable {
     FOOD(Color.parseColor("#FF6B6B"), "Yemek"),
     SHOPPING(Color.parseColor("#4ECDC4"), "Alışveriş"),
     TRANSPORTATION(Color.parseColor("#45B7D1"), "Ulaşım"),

@@ -49,6 +49,7 @@ import android.content.Context
 import android.widget.Spinner
 import android.widget.ArrayAdapter
 import android.database.sqlite.SQLiteConstraintException
+import com.github.mikephil.charting.BuildConfig
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -108,7 +109,11 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         navigationRailView = findViewById(R.id.navigationRail)
 
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            setItemViewCacheSize(20)
+            setHasFixedSize(true)
+        }
         setupSearch()
         setupSwipeRefresh()
 
@@ -120,6 +125,7 @@ class MainActivity : AppCompatActivity() {
     private fun initializeAdapter() {
         transactionAdapter = TransactionAdapter(mutableListOf())
         recyclerView.adapter = transactionAdapter
+        setupTransactionClickListener()
         loadTransactions()
     }
 
@@ -378,6 +384,12 @@ class MainActivity : AppCompatActivity() {
         return sdf.format(Date())
     }
 
+    private fun log(tag: String, message: String) {
+        if (BuildConfig.DEBUG) {
+            Log.d(tag, message)
+        }
+    }
+
     //pdf dosyasını okuma fonksiyonu
     @SuppressLint("SetTextI18n")
     fun handlePdfFile(uri: Uri) {
@@ -385,7 +397,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val pdfText = pdfParser.extractText(uri, contentResolver)
-                Log.d("DEBUG", "PDF Text: $pdfText") // Debug için PDF içeriğini logla
+                log("DEBUG", "PDF Text: $pdfText")
                 
                 var bankFound = false
                 // Check for supported banks first
@@ -397,7 +409,7 @@ class MainActivity : AppCompatActivity() {
                                 handleCreditCardStatement(bankName, pdfText)
                             } else {
                                 val transactions = extractTransactions(pdfText)
-                                Log.d("DEBUG", "Extracted transactions: $transactions") // Debug için işlemleri logla
+                                log("DEBUG", "Extracted transactions: $transactions")
                                 if (transactions.isNotEmpty()) {
                                     launchEditActivity(transactions)
                                 } else {
@@ -418,7 +430,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("PDF_ERROR", "PDF işleme hatası", e) // Detaylı hata logu
+                log("PDF_ERROR", "PDF işleme hatası: ${e.message}")
                 withContext(Dispatchers.Main) {
                     hideLoading()
                     showError("PDF işleme hatası: ${e.message}")
@@ -713,7 +725,11 @@ class MainActivity : AppCompatActivity() {
     private fun launchAnalytics() {
         lifecycleScope.launch(Dispatchers.IO) {
             val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+            log("ANALYTICS", "Transaction count: ${transactions.size}")
+            
             val analytics = TransactionAnalytics().analyzeTransactions(transactions)
+            log("ANALYTICS", "Monthly breakdown: ${analytics.monthlyBreakdown}")
+            log("ANALYTICS", "Category breakdown: ${analytics.categoryBreakdown}")
 
             withContext(Dispatchers.Main) {
                 val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
@@ -856,6 +872,13 @@ class MainActivity : AppCompatActivity() {
                 }
                 else -> false
             }
+        }
+    }
+
+    private fun setupTransactionClickListener() {
+        transactionAdapter.setOnItemClickListener { transaction ->
+            val bottomSheet = TransactionDetailsBottomSheet.newInstance(transaction)
+            bottomSheet.show(supportFragmentManager, "TransactionDetails")
         }
     }
 }
