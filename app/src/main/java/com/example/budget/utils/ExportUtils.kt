@@ -30,30 +30,30 @@ class ExportUtils {
         headers.forEachIndexed { index, header ->
             val cell = headerRow.createCell(index)
             cell.setCellValue(header)
-            // Set a fixed column width instead of auto-sizing
-            sheet.setColumnWidth(index, 15 * 256) // 15 characters width
+            sheet.setColumnWidth(index, 15 * 256)
         }
 
         // Fill data rows
         filteredTransactions.forEachIndexed { index, transaction ->
             val row = sheet.createRow(index + 1)
             row.createCell(0).setCellValue(transaction.date)
-            row.createCell(1).setCellValue(transaction.time ?: "")
-            row.createCell(2).setCellValue(transaction.transactionId ?: "")
+            row.createCell(1).setCellValue(transaction.time)
+            row.createCell(2).setCellValue(transaction.transactionId)
             row.createCell(3).setCellValue(transaction.amount)
             row.createCell(4).setCellValue(transaction.balance ?: 0.0)
             row.createCell(5).setCellValue(transaction.description)
             row.createCell(6).setCellValue(transaction.bankName)
         }
 
-        // Set description column wider as it typically contains more text
-        sheet.setColumnWidth(5, 30 * 256) // 30 characters width
+        // Set description column wider
+        sheet.setColumnWidth(5, 30 * 256)
 
         context.contentResolver.openOutputStream(uri)?.use { outputStream ->
             workbook.write(outputStream)
         }
         workbook.close()
     }
+
     fun exportToPDF(context: Context, transactions: List<TransactionEntity>, uri: Uri, selectedBank: String? = null) {
         val filteredTransactions = if (selectedBank != null) {
             transactions.filter { it.bankName == selectedBank }
@@ -81,8 +81,8 @@ class ExportUtils {
             // Add data
             filteredTransactions.forEach { transaction ->
                 table.addCell(Cell().add(Paragraph(transaction.date)))
-                table.addCell(Cell().add(Paragraph(transaction.time ?: "")))
-                table.addCell(Cell().add(Paragraph(transaction.transactionId ?: "")))
+                table.addCell(Cell().add(Paragraph(transaction.time)))
+                table.addCell(Cell().add(Paragraph(transaction.transactionId)))
                 table.addCell(Cell().add(Paragraph(transaction.amount.toString())))
                 table.addCell(Cell().add(Paragraph(transaction.balance?.toString() ?: "")))
                 table.addCell(Cell().add(Paragraph(transaction.description)))

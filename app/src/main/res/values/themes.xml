@@ -1,12 +1,29 @@
 <resources>
     <!-- Base application theme. -->
 
-    <style name="Theme.Budget" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/md_theme_light_primary</item>
-        <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
-        <item name="colorSecondary">@color/md_theme_light_secondary</item>
-        <item name="colorOnSecondary">@color/md_theme_light_onSecondary</item>
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+    <style name="Theme.Budget" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_high_emphasis</item>
+        <item name="android:textColorSecondary">@color/text_medium_emphasis</item>
+        <item name="android:textColorTertiary">@color/text_low_emphasis</item>
+        
+        <!-- Component styles -->
+        <item name="materialCardViewStyle">@style/Widget.Budget.CardView</item>
+        <item name="textInputStyle">@style/Widget.Budget.TextInputLayout</item>
+    </style>
+
+    <style name="Widget.Budget.CardView" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">?attr/colorSurface</item>
+        <item name="cardElevation">1dp</item>
+    </style>
+
+    <style name="Widget.Budget.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/primary</item>
+        <item name="hintTextColor">@color/text_medium_emphasis</item>
     </style>
 </resources>

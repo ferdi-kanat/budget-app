@@ -12,25 +12,31 @@
         android:orientation="horizontal"
         android:layout_marginBottom="8dp">
 
-        <TextView
+        <com.google.android.material.textview.MaterialTextView
             android:id="@+id/textViewDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:textColor="@color/text_color"
+            android:textColor="?attr/colorOnSurface"
             android:text="@string/tarih" />
 
-        <EditText
-            android:id="@+id/editTextDate"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:autofillHints="date"
-            android:hint="@string/hint_date"
-            android:inputType="date"
-            android:maxWidth="160dp"
+            android:layout_height="wrap_content"
             android:minWidth="120dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="#616161" />
+            android:maxWidth="160dp"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="date"
+                android:hint="@string/hint_date"
+                android:inputType="date"
+                android:minHeight="48dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -39,15 +45,21 @@
         android:gravity="center_vertical"
         android:layout_marginBottom="8dp">
 
-        <EditText
-            android:id="@+id/editTextDescription"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="240dp"
-            android:layout_height="48dp"
-            android:autofillHints="none"
-            android:hint="@string/hint_description"
-            android:inputType="text"
-            android:textColor="@color/text_color"
-            android:textColorHint="#616161" />
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="none"
+                android:hint="@string/hint_description"
+                android:inputType="text"
+                android:minHeight="48dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -55,15 +67,21 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical">
 
-        <EditText
-            android:id="@+id/editTextAmount"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="160dp"
-            android:layout_height="48dp"
-            android:autofillHints="none"
-            android:hint="@string/hint_amount"
-            android:inputType="numberDecimal"
-            android:textColor="@color/text_color"
-            android:textColorHint="#616161" />
+            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="none"
+                android:hint="@string/hint_amount"
+                android:inputType="numberDecimal"
+                android:minHeight="48dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
 </LinearLayout>

@@ -2,38 +2,195 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- Navigation Rail for tablets -->
         <com.google.android.material.navigationrail.NavigationRailView
             android:id="@+id/navigationRail"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="start"
+            android:visibility="visible"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:menu="@menu/bottom_navigation_menu"
-            app:labelVisibilityMode="labeled"/>
+            app:menu="@menu/bottom_navigation_menu"/>
 
-        <!-- Mevcut içeriği bir container içine alıyoruz -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/mainContainer"
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarLayout"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintStart_toEndOf="@id/navigationRail"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorSurface"
+                android:iconifiedByDefault="false"
+                android:queryHint="@string/search_transactions"
+                app:queryHint="@string/search_transactions"/>
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintStart_toEndOf="@id/navigationRail"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/appBarLayout"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <!-- Mevcut activity_main.xml içeriği buraya -->
-            
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Transaction Management Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/buttonAddTransaction"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:minWidth="200dp"
+                                android:text="@string/gelir_gider_ekle"
+                                android:contentDescription="@string/add_transaction_description"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/buttonClearDatabase"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:minWidth="200dp"
+                                android:text="@string/veritaban_n_temizle"
+                                android:backgroundTint="@color/error"
+                                android:textColor="@color/white"
+                                style="@style/Widget.Material3.Button.ElevatedButton"
+                                android:contentDescription="@string/clear_database_description"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/buttonAnalytics"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:minWidth="200dp"
+                                android:text="@string/analytics"
+                                android:contentDescription="@string/analytics_description"/>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Data Loading Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/buttonLoadPDF"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:minWidth="200dp"
+                                android:text="@string/pdf_y_kle"
+                                android:contentDescription="@string/load_pdf_description"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/buttonLoadXLSX"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:minWidth="200dp"
+                                android:text="@string/xlsx_y_kle"
+                                android:contentDescription="@string/load_xlsx_description"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/buttonExport"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:minWidth="200dp"
+                                android:text="@string/export_data"
+                                android:contentDescription="@string/export_data_description"/>
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Transaction List -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/textViewResult"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/textViewDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewTransactions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"/>
+
+                </LinearLayout>
+
+            </androidx.core.widget.NestedScrollView>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <!-- For phones -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:menu="@menu/bottom_navigation_menu"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout> 

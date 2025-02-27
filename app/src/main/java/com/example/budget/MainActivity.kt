@@ -3,7 +3,6 @@ package com.example.budget
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -44,6 +43,12 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.android.material.navigation.NavigationBarView
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatDelegate
+import android.content.res.Configuration
+import android.content.Context
+import android.widget.Spinner
+import android.widget.ArrayAdapter
+import android.database.sqlite.SQLiteConstraintException
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -64,6 +69,8 @@ class MainActivity : AppCompatActivity() {
         private const val EXCEL_EXPORT_REQUEST_CODE = 3
         private const val PDF_EXPORT_REQUEST_CODE = 4
         private const val EDIT_TRANSACTIONS_REQUEST = 100
+        private const val PREFS_NAME = "BudgetPrefs"
+        private const val DARK_MODE_KEY = "dark_mode"
     }
     private var tempSelectedBank: String? = null
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -75,6 +82,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Kaydedilmiş gece modu tercihini uygula
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val isDarkMode = prefs.getBoolean(DARK_MODE_KEY, false)
+        AppCompatDelegate.setDefaultNightMode(
+            if (isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
+        
         setContentView(R.layout.activity_main)
         DatabaseProvider.initialize(this)
         initializeViews()
@@ -287,29 +302,27 @@ class MainActivity : AppCompatActivity() {
         val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
         val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
         val editTextDate = dialogView.findViewById<EditText>(R.id.editTextDate)
+        val spinnerCategory = dialogView.findViewById<Spinner>(R.id.spinnerCategory)
         val buttonSaveTransaction = dialogView.findViewById<Button>(R.id.buttonSaveTransaction)
+
+        // Kategori spinner'ını ayarla
+        val categories = TransactionCategory.values()
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            categories.map { it.displayName }
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCategory.adapter = adapter
 
         // Varsayılan olarak günün tarihini göster
         editTextDate.setText(getCurrentDate())
-
-        // Tarih seçici
-        editTextDate.setOnClickListener {
-            val calendar = Calendar.getInstance()
-            DatePickerDialog(this,
-                { _, year, month, day ->
-                    val selectedDate = String.format("%02d.%02d.%04d", day, month + 1, year)
-                    editTextDate.setText(selectedDate)
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
-        }
 
         buttonSaveTransaction.setOnClickListener {
             val description = editTextDescription.text.toString()
             val amount = editTextAmount.text.toString().toDoubleOrNull() ?: 0.0
             val date = editTextDate.text.toString()
+            val selectedCategory = categories[spinnerCategory.selectedItemPosition]
 
             if (description.isBlank()) {
                 editTextDescription.error = "Açıklama gerekli"
@@ -321,39 +334,36 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            saveTransaction(description, amount, date)
+            saveTransaction(description, amount, date, selectedCategory)
             dialog.dismiss()
         }
 
         dialog.show()
     }
 
-    private fun saveTransaction(description: String, amount: Double, date: String) {
+    private fun saveTransaction(
+        description: String,
+        amount: Double,
+        date: String,
+        category: TransactionCategory
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val transaction = Transaction(
+            val transactionEntity = TransactionEntity(
+                transactionId = UUID.randomUUID().toString(),
                 date = date,
                 time = getCurrentTime(),
-                transactionId = UUID.randomUUID().toString(),
-                amount = amount.toString(),
-                balance = "0.0",
-                description = description
-            )
-
-            val transactionEntity = TransactionEntity(
-                date = transaction.date,
-                time = transaction.time,
-                transactionId = transaction.transactionId,
+                description = description,
                 amount = amount,
                 balance = null,
-                description = description,
-                bankName = "Manuel Giriş"
+                bankName = "Manuel Giriş",
+                category = category
             )
 
             DatabaseProvider.getTransactionDao().insertTransaction(transactionEntity)
 
             withContext(Dispatchers.Main) {
                 refreshRecyclerView()
-                Toast.makeText(this@MainActivity, "İşlem kaydedildi", Toast.LENGTH_SHORT).show()
+                showSuccess("İşlem kaydedildi")
             }
         }
     }
@@ -433,24 +443,42 @@ class MainActivity : AppCompatActivity() {
     }
     //veritabanına kaydetme işlemi
     private suspend fun saveTransactionsToDatabase(transactions: List<Transaction>) {
-        showLoading()
-        val dao = DatabaseProvider.getTransactionDao()
-        transactions.forEach { transaction ->
-            val entity = TransactionEntity(
-                transactionId = transaction.transactionId,
-                date = transaction.date,
-                time = transaction.time,
-                description = transaction.description,
-                amount = transaction.amount.toDouble(),
-                balance = transaction.balance.toDoubleOrNull() ?: 0.0,
-                bankName = transaction.bankName
-            )
-            dao.insertTransaction(entity)
-        }
-        withContext(Dispatchers.Main) {
-            hideLoading()
-            loadTransactions()
-            showSuccess("Transactions saved successfully")
+        try {
+            showLoading()
+            val dao = DatabaseProvider.getTransactionDao()
+            
+            // Her bir işlemi kontrol et ve güncelle/ekle
+            transactions.forEach { transaction ->
+                val entity = TransactionEntity(
+                    transactionId = transaction.transactionId,
+                    date = transaction.date,
+                    time = transaction.time,
+                    description = transaction.description,
+                    amount = transaction.amount.toDouble(),
+                    balance = transaction.balance.toDoubleOrNull() ?: 0.0,
+                    bankName = transaction.bankName,
+                    category = TransactionCategory.fromDescription(transaction.description)
+                )
+
+                try {
+                    dao.insertTransaction(entity)
+                } catch (e: SQLiteConstraintException) {
+                    // Eğer işlem zaten varsa, güncelle
+                    Log.d("DATABASE", "Transaction already exists, updating: ${entity.transactionId}")
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                hideLoading()
+                loadTransactions()
+                showSuccess("İşlemler başarıyla kaydedildi")
+            }
+        } catch (e: Exception) {
+            Log.e("SAVE_ERROR", "Kaydetme hatası", e)
+            withContext(Dispatchers.Main) {
+                hideLoading()
+                showError("Kaydetme hatası: ${e.localizedMessage}")
+            }
         }
     }
 
@@ -786,17 +814,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showSettingsDialog() {
-        val options = arrayOf("Veritabanını Temizle", "Dışa Aktar", "İptal")
+        val options = arrayOf("Veritabanını Temizle", "Dışa Aktar", "Gece Modu", "İptal")
         AlertDialog.Builder(this)
             .setTitle("Ayarlar")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> clearDatabase()
                     1 -> showExportDialog()
-                    // 2 (İptal) için bir şey yapmaya gerek yok
+                    2 -> toggleDarkMode()
                 }
             }
             .show()
+    }
+
+    private fun toggleDarkMode() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val isDarkMode = resources.configuration.uiMode and 
+                        Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        
+        prefs.edit().putBoolean(DARK_MODE_KEY, !isDarkMode).apply()
+        
+        AppCompatDelegate.setDefaultNightMode(
+            if (!isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
     }
 
     private class NavigationHandler(private val actions: NavigationActions) : 

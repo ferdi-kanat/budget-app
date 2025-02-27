@@ -152,18 +152,12 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- For tablets (>= 600dp) -->
-    <androidx.drawerlayout.widget.DrawerLayout
-        android:layout_width="match_parent"
+    <com.google.android.material.navigationrail.NavigationRailView
+        android:id="@+id/navigationRail"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:visibility="gone">
-
-        <com.google.android.material.navigation.NavigationView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            app:menu="@menu/bottom_navigation_menu"/>
-
-    </androidx.drawerlayout.widget.DrawerLayout>
+        android:visibility="gone"
+        app:menu="@menu/bottom_navigation_menu"/>
 
     <!-- For phones (< 600dp) -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
