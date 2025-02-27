@@ -687,9 +687,11 @@ class MainActivity : AppCompatActivity() {
             val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
             val analytics = TransactionAnalytics().analyzeTransactions(transactions)
 
-            val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
-            intent.putExtra("analytics", analytics)
-            startActivity(intent)
+            withContext(Dispatchers.Main) {
+                val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
+                intent.putExtra("analytics", analytics as Parcelable)
+                startActivity(intent)
+            }
         }
     }
 
@@ -777,7 +779,7 @@ class MainActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
-                intent.putExtra("analytics", analytics)
+                intent.putExtra("analytics", analytics as Parcelable)
                 startActivity(intent)
             }
         }

@@ -12,5 +12,6 @@ data class TransactionEntity(
     val amount: Double, // Parasal veriler
     val balance: Double?, // Bakiye bazı durumlarda eksik olabilir
     val description: String, // İşlem açıklaması
-    val bankName: String // Banka adı (Ziraat veya VakıfBank)
+    val bankName: String, // Banka adı (Ziraat veya VakıfBank)
+    val category: String = "DİĞER"  // Yeni alan
 )

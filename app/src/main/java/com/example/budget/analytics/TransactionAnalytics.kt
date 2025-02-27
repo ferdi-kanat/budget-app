@@ -16,31 +16,27 @@ class TransactionAnalytics {
         val totalIncome = transactions.filter { it.amount > 0 }.sumOf { it.amount }
         val totalExpense = transactions.filter { it.amount < 0 }.sumOf { it.amount }
         val balance = totalIncome + totalExpense
-
+        
+        val monthlyBreakdown = calculateMonthlyTotals(transactions)
         val categoryBreakdown = calculateCategoryBreakdown(transactions)
-        val monthlyTotals = calculateMonthlyTotals(transactions)
-        val bankwiseTotal = calculateBankwiseTotal(transactions)
+        val bankBreakdown = calculateBankwiseTotal(transactions)
 
         return AnalyticsResult(
             totalIncome = totalIncome,
-            totalExpense = abs(totalExpense),
+            totalExpense = totalExpense,
             balance = balance,
+            monthlyBreakdown = monthlyBreakdown,
             categoryBreakdown = categoryBreakdown,
-            monthlyTotals = monthlyTotals,
-            bankwiseTotal = bankwiseTotal
+            bankBreakdown = bankBreakdown
         )
     }
 
     private fun calculateCategoryBreakdown(transactions: List<TransactionEntity>): Map<String, Double> {
-        val breakdown = mutableMapOf<String, Double>()
-        
-        transactions.forEach { transaction ->
-            val category = determineCategory(transaction.description.lowercase())
-            val amount = abs(transaction.amount)
-            breakdown[category] = (breakdown[category] ?: 0.0) + amount
-        }
-        
-        return breakdown
+        return transactions
+            .groupBy { determineCategory(it.description.lowercase()) }
+            .mapValues { (_, transactions) -> 
+                transactions.filter { it.amount < 0 }.sumOf { abs(it.amount) }
+            }
     }
 
     private fun determineCategory(description: String): String {

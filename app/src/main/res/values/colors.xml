@@ -2,7 +2,8 @@
 <resources>
     <color name="white">#FFFFFF</color>
     <color name="text_color">#000000</color>
-    <color name="primary">#006C4C</color>
+    <color name="primary">#2196F3</color>
+    <color name="primary_light">#64B5F6</color>
     <color name="error">#B00020</color>
     <color name="md_theme_light_primary">#006C4C</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
