@@ -40,6 +40,10 @@ import java.util.*
 import androidx.appcompat.widget.SearchView
 import android.app.Activity
 import android.util.Log
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigationrail.NavigationRailView
+import com.google.android.material.navigation.NavigationBarView
+import android.view.MenuItem
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -66,6 +70,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var progressIndicator: CircularProgressIndicator
     private lateinit var searchView: SearchView
     private var tempExportType: ExportType? = null
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private var navigationRailView: NavigationRailView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +80,7 @@ class MainActivity : AppCompatActivity() {
         initializeViews()
         setupListeners()
         initializeAdapter()
+        setupNavigationViews()
     }
 
     private fun initializeViews() {
@@ -83,10 +90,16 @@ class MainActivity : AppCompatActivity() {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
         progressIndicator = findViewById(R.id.progressIndicator)
         searchView = findViewById(R.id.searchBar)
+        bottomNavigationView = findViewById(R.id.bottomNavigationView)
+        navigationRailView = findViewById(R.id.navigationRail)
 
         recyclerView.layoutManager = LinearLayoutManager(this)
         setupSearch()
         setupSwipeRefresh()
+
+        // Navigation'ı başlangıçta home seçili olarak ayarla
+        bottomNavigationView.selectedItemId = R.id.menu_home
+        navigationRailView?.selectedItemId = R.id.menu_home
     }
 
     private fun initializeAdapter() {
@@ -203,9 +216,7 @@ class MainActivity : AppCompatActivity() {
             findViewById(android.R.id.content),
             message,
             Snackbar.LENGTH_LONG
-        ).setAction("Retry") {
-            loadTransactions()
-        }.show()
+        ).show()
     }
 
     private fun showClearDatabaseConfirmation() {
@@ -709,5 +720,99 @@ class MainActivity : AppCompatActivity() {
             message,
             Snackbar.LENGTH_SHORT
         ).show()
+    }
+
+    private interface NavigationActions {
+        fun onAnalyticsSelected()
+        fun onSettingsSelected()
+    }
+
+    private fun setupNavigationViews() {
+        bottomNavigationView = findViewById(R.id.bottomNavigationView)
+        navigationRailView = findViewById(R.id.navigationRail)
+
+        val isLargeScreen = resources.configuration.screenWidthDp >= 600
+        val navigationHandler = createNavigationHandler()
+
+        try {
+            setupNavigationBasedOnScreenSize(isLargeScreen, navigationHandler)
+        } catch (e: Exception) {
+            showError("Navigation yapısı kurulurken hata oluştu: ${e.message}")
+        }
+    }
+
+    private fun createNavigationHandler(): NavigationBarView.OnItemSelectedListener {
+        val navigationActions = object : NavigationActions {
+            override fun onAnalyticsSelected() = navigateToAnalytics()
+            override fun onSettingsSelected() = showSettingsDialog()
+        }
+        return NavigationHandler(navigationActions)
+    }
+
+    private fun setupNavigationBasedOnScreenSize(
+        isLargeScreen: Boolean,
+        navigationHandler: NavigationBarView.OnItemSelectedListener
+    ) {
+        if (isLargeScreen) {
+            bottomNavigationView.visibility = View.GONE
+            navigationRailView?.apply {
+                visibility = View.VISIBLE
+                setOnItemSelectedListener(navigationHandler)
+                selectedItemId = R.id.menu_home
+            }
+        } else {
+            navigationRailView?.visibility = View.GONE
+            bottomNavigationView.apply {
+                visibility = View.VISIBLE
+                setOnItemSelectedListener(navigationHandler)
+                selectedItemId = R.id.menu_home
+            }
+        }
+    }
+
+    private fun navigateToAnalytics() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+            val analytics = TransactionAnalytics().analyzeTransactions(transactions)
+
+            withContext(Dispatchers.Main) {
+                val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
+                intent.putExtra("analytics", analytics)
+                startActivity(intent)
+            }
+        }
+    }
+
+    private fun showSettingsDialog() {
+        val options = arrayOf("Veritabanını Temizle", "Dışa Aktar", "İptal")
+        AlertDialog.Builder(this)
+            .setTitle("Ayarlar")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> clearDatabase()
+                    1 -> showExportDialog()
+                    // 2 (İptal) için bir şey yapmaya gerek yok
+                }
+            }
+            .show()
+    }
+
+    private class NavigationHandler(private val actions: NavigationActions) : 
+        NavigationBarView.OnItemSelectedListener {
+        
+        override fun onNavigationItemSelected(item: MenuItem): Boolean {
+            return when (item.itemId) {
+                R.id.menu_home -> true  // Ana sayfa zaten aktif
+                R.id.menu_analytics -> {
+                    actions.onAnalyticsSelected()
+                    true
+                }
+                R.id.menu_settings -> {
+                    actions.onSettingsSelected()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 }
