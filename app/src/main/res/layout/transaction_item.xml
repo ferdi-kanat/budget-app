@@ -21,7 +21,9 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
             app:chipMinHeight="32dp"
-            style="@style/Widget.Material3.Chip.Assist"/>
+            style="@style/Widget.Material3.Chip.Assist"
+            android:contentDescription="@string/category_chip_content_description"
+            android:importantForAccessibility="yes"/>
 
         <LinearLayout
             android:layout_width="0dp"

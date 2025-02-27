@@ -21,8 +21,8 @@
         android:layout_marginBottom="16dp"
         style="@style/Widget.Material3.Chip.Assist"
         android:contentDescription="@string/transaction_category_content_description"
-        app:chipAccessibilityLiveRegion="polite"
-        android:labelFor="@id/textViewTransactionDescription"/>
+        android:importantForAccessibility="yes"
+        app:ensureMinTouchTargetSize="true"/>
 
     <TextView
         android:id="@+id/textViewTransactionDescription"

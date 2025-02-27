@@ -50,6 +50,9 @@ import android.widget.Spinner
 import android.widget.ArrayAdapter
 import android.database.sqlite.SQLiteConstraintException
 import com.github.mikephil.charting.BuildConfig
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import android.app.DatePickerDialog
 
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
@@ -80,6 +83,8 @@ class MainActivity : AppCompatActivity() {
     private var tempExportType: ExportType? = null
     private lateinit var bottomNavigationView: BottomNavigationView
     private var navigationRailView: NavigationRailView? = null
+    private var startDate: String? = null
+    private var endDate: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +121,7 @@ class MainActivity : AppCompatActivity() {
         }
         setupSearch()
         setupSwipeRefresh()
+        setupDateFilter()
 
         // Navigation'ı başlangıçta home seçili olarak ayarla
         bottomNavigationView.selectedItemId = R.id.menu_home
@@ -200,6 +206,22 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                    .filter { transaction ->
+                        // Apply date filter if exists
+                        val matchesDateFilter = if (startDate != null && endDate != null) {
+                            val transactionDate = transaction.date
+                            transactionDate in startDate!!..endDate!!
+                        } else true
+
+                        // Apply search filter if exists
+                        val matchesSearch = searchView.query?.toString()?.let { query ->
+                            transaction.description.contains(query, ignoreCase = true) ||
+                            transaction.amount.toString().contains(query)
+                        } ?: true
+
+                        matchesDateFilter && matchesSearch
+                    }
+
                 withContext(Dispatchers.Main) {
                     if (transactions.isEmpty()) {
                         showError("No transactions found")
@@ -880,5 +902,76 @@ class MainActivity : AppCompatActivity() {
             val bottomSheet = TransactionDetailsBottomSheet.newInstance(transaction)
             bottomSheet.show(supportFragmentManager, "TransactionDetails")
         }
+    }
+
+    private fun setupDateFilter() {
+        findViewById<MaterialButton>(R.id.buttonDateFilter).setOnClickListener {
+            showDateFilterDialog()
+        }
+    }
+
+    private fun showDateFilterDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_date_filter, null)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.date_filter)
+            .setView(dialogView)
+            .create()
+
+        val editTextStartDate = dialogView.findViewById<TextInputEditText>(R.id.editTextStartDate)
+        val editTextEndDate = dialogView.findViewById<TextInputEditText>(R.id.editTextEndDate)
+
+        // Set current filter values if they exist
+        editTextStartDate.setText(startDate ?: "")
+        editTextEndDate.setText(endDate ?: "")
+
+        // Setup date pickers
+        editTextStartDate.setOnClickListener {
+            showDatePicker(editTextStartDate)
+        }
+
+        editTextEndDate.setOnClickListener {
+            showDatePicker(editTextEndDate)
+        }
+
+        // Setup buttons
+        dialogView.findViewById<MaterialButton>(R.id.buttonClearFilter).setOnClickListener {
+            startDate = null
+            endDate = null
+            loadTransactions()
+            dialog.dismiss()
+        }
+
+        dialogView.findViewById<MaterialButton>(R.id.buttonApplyFilter).setOnClickListener {
+            startDate = editTextStartDate.text?.toString()
+            endDate = editTextEndDate.text?.toString()
+            loadTransactions()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun showDatePicker(editText: TextInputEditText) {
+        val calendar = Calendar.getInstance()
+        
+        // If there's existing text, parse it
+        editText.text?.toString()?.let { dateStr ->
+            if (dateStr.isNotEmpty()) {
+                val parts = dateStr.split(".")
+                if (parts.size == 3) {
+                    calendar.set(parts[2].toInt(), parts[1].toInt() - 1, parts[0].toInt())
+                }
+            }
+        }
+
+        DatePickerDialog(
+            this,
+            { _, year, month, dayOfMonth ->
+                editText.setText(String.format("%02d.%02d.%04d", dayOfMonth, month + 1, year))
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 }

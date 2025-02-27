@@ -55,6 +55,10 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
             text = transaction.category.displayName
             chipBackgroundColor = ColorStateList.valueOf(transaction.category.color)
             setTextColor(Color.WHITE)
+            contentDescription = holder.itemView.context.getString(
+                R.string.category_chip_description_format,
+                transaction.category.displayName
+            )
         }
 
         // Add click listener to the entire item

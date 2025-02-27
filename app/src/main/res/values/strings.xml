@@ -25,11 +25,11 @@
     <string name="clear">Temizle</string>
     <string name="cancel">İptal</string>
     <string name="search_transactions">İşlemlerde ara…</string>
-    <string name="add_transaction_description">Add new income or expense</string>
-    <string name="clear_database_description">Clear all transactions from database</string>
-    <string name="analytics_description">View transaction analytics and reports</string>
-    <string name="load_pdf_description">Import transactions from PDF file</string>
-    <string name="load_xlsx_description">Import transactions from Excel file</string>
+    <string name="add_transaction_description">Yeni gelir veya gider ekle</string>
+    <string name="clear_database_description">Tüm işlem geçmişini temizle</string>
+    <string name="analytics_description">İşlem analizlerini görüntüle</string>
+    <string name="load_pdf_description">PDF banka ekstresini yükle</string>
+    <string name="load_xlsx_description">Excel banka ekstresini yükle</string>
     <string name="export_data_description">Export transactions to file</string>
     <string name="settings">Ayarlar</string>
     <string name="home">Anasayfa</string>
@@ -37,4 +37,18 @@
     <string name="amount_format">%.2f ₺</string>
     <string name="transaction_category_content_description">Transaction category</string>
     <string name="transaction_category_with_name">Transaction category: %s</string>
+    <string name="filter">Filtrele</string>
+    <string name="date_filter">Tarih Filtresi</string>
+    <string name="start_date">Başlangıç Tarihi</string>
+    <string name="end_date">Bitiş Tarihi</string>
+    <string name="apply">Uygula</string>
+    <string name="clear_filter">Filtreyi Temizle</string>
+    <string name="category_chip_content_description">İşlem kategorisi</string>
+    <string name="category_chip_description_format">Kategori: %s</string>
+    <string name="add_transaction">İşlem Ekle</string>
+    <string name="export_description">İşlemleri dışa aktar</string>
+    <string name="load_pdf">PDF Yükle</string>
+    <string name="load_xlsx">Excel Yükle</string>
+    <string name="export">Dışa Aktar</string>
+    <string name="clear_database">Veritabanını Temizle</string>
 </resources>
