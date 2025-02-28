@@ -33,6 +33,9 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 repositories {
@@ -61,4 +64,8 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("org.slf4j:slf4j-simple:1.7.32")
+    implementation ("androidx.activity:activity-ktx:1.7.1")
+    implementation ("androidx.fragment:fragment-ktx:1.5.7")
+
+
 }

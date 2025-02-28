@@ -49,22 +49,25 @@ class TransactionDetailsBottomSheet : BottomSheetDialogFragment() {
     private fun displayTransactionDetails(transaction: TransactionEntity, view: View) {
         view.findViewById<TextView>(R.id.textViewTransactionDate).text = transaction.date
         view.findViewById<TextView>(R.id.textViewTransactionDescription).text = transaction.description
-        
+
         view.findViewById<TextView>(R.id.textViewTransactionAmount).apply {
             text = getString(R.string.amount_format, transaction.amount)
-            setTextColor(if (transaction.amount >= 0) 
+            setTextColor(if (transaction.amount >= 0)
                 Color.parseColor("#4CAF50") else Color.parseColor("#F44336"))
         }
-        
+
         view.findViewById<TextView>(R.id.textViewTransactionBank).text = transaction.bankName
-        view.findViewById<TextView>(R.id.textViewTransactionId).text = 
+        view.findViewById<TextView>(R.id.textViewTransactionId).text =
             getString(R.string.transaction_id_format, transaction.transactionId)
-        
+
+        // String olarak saklanan kategori adını kullan
+        val categoryName = transaction.category
+        // displayName olmadan direkt category string'i kullanılır
         view.findViewById<Chip>(R.id.chipCategory).apply {
-            text = transaction.category.displayName
+            text = categoryName
             contentDescription = getString(
                 R.string.transaction_category_with_name,
-                transaction.category.displayName
+                categoryName
             )
         }
     }

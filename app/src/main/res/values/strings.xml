@@ -51,4 +51,19 @@
     <string name="load_xlsx">Excel Yükle</string>
     <string name="export">Dışa Aktar</string>
     <string name="clear_database">Veritabanını Temizle</string>
+    <string name="budget_goal_title">Bütçe Hedefi</string>
+    <string name="target_amount">Hedef Tutar</string>
+    <string name="spent_amount">Harcanan: %s</string>
+    <string name="target_amount_format">Hedef: %s</string>
+    <string name="add_budget_goal">Bütçe Hedefi Ekle</string>
+    <string name="budget_goals">Bütçe Hedefleri</string>
+    <string name="no_budget_goals">Henüz hiç bütçe hedefi eklenmedi</string>
+    <string name="add_budget_goal_description">Harcama limitlerinizi belirlemek için + butonuna tıklayın</string>
+    <string name="category">kategori</string>
+    <string name="save">kaydet</string>
+    <string name="category_dropdown_description">Bütçe hedefi için kategori seçin</string>
+    <string name="amount">tutar</string>
+    <string name="spent_amount_format">Harcanan: %s</string>
+    <string name="budget_goal_amount_format">Hedef: %s</string>
+    <string name="select_category_hint">Kategori seçin</string>
 </resources>

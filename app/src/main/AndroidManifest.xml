@@ -30,6 +30,10 @@
 
         </activity>
         <activity android:name=".analytics.AnalyticsActivity" />
+        <activity
+            android:name=".ui.BudgetGoalsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Budget" />
     </application>
 
 </manifest>

@@ -27,11 +27,11 @@ class TransactionAnalytics {
     private fun calculateCategoryBreakdown(transactions: List<TransactionEntity>): Map<String, Double> {
         val categoryMap = transactions
             .filter { it.amount < 0 } // Önce sadece harcamaları filtrele
-            .groupBy { it.category.displayName } // TransactionCategory'nin displayName'ini kullan
-            .mapValues { (_, transactions) -> 
+            .groupBy { it.category } // Doğrudan String olarak kategoriyi kullan
+            .mapValues { (_, transactions) ->
                 transactions.sumOf { abs(it.amount) }
             }
-        
+
         return categoryMap.filterValues { it > 0 } // Sıfırdan büyük değerleri filtrele
     }
 

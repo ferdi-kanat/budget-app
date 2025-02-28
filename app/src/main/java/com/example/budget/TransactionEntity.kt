@@ -1,6 +1,5 @@
 package com.example.budget
 
-import android.graphics.Color
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
@@ -21,34 +20,46 @@ data class TransactionEntity(
     val amount: Double,
     val balance: Double?,
     val bankName: String,
-    val category: TransactionCategory = TransactionCategory.OTHER
+    val category: String // String olarak saklayalım
 ) : Parcelable
 
 @Parcelize
-enum class TransactionCategory(val color: Int, val displayName: String) : Parcelable {
-    FOOD(Color.parseColor("#FF6B6B"), "Yemek"),
-    SHOPPING(Color.parseColor("#4ECDC4"), "Alışveriş"),
-    TRANSPORTATION(Color.parseColor("#45B7D1"), "Ulaşım"),
-    BILLS(Color.parseColor("#96CEB4"), "Faturalar"),
-    ENTERTAINMENT(Color.parseColor("#FFBE0B"), "Eğlence"),
-    HEALTH(Color.parseColor("#FF006E"), "Sağlık"),
-    EDUCATION(Color.parseColor("#8338EC"), "Eğitim"),
-    INCOME(Color.parseColor("#06D6A0"), "Gelir"),
-    OTHER(Color.parseColor("#A0A0A0"), "Diğer");
+enum class TransactionCategory(
+    val displayName: String,
+    val colorResId: Int
+) : Parcelable {
+    FOOD("Yemek", R.color.category_food),
+    SHOPPING("Alışveriş", R.color.category_shopping),
+    BILLS("Faturalar", R.color.category_bills),
+    TRANSPORTATION("Ulaşım", R.color.category_transportation),
+    HEALTH("Sağlık", R.color.category_health),
+    EDUCATION("Eğitim", R.color.category_education),
+    ENTERTAINMENT("Eğlence", R.color.category_entertainment),
+    SALARY("Maaş", R.color.category_salary),
+    OTHER("Diğer", R.color.category_other);
 
     companion object {
+        fun fromDisplayName(displayName: String): TransactionCategory {
+            return values().find { it.displayName == displayName } ?: OTHER
+        }
+
         fun fromDescription(description: String): TransactionCategory {
+            val lowerDesc = description.lowercase()
             return when {
-                description.contains(Regex("market|alisveris|mağaza", RegexOption.IGNORE_CASE)) -> SHOPPING
-                description.contains(Regex("yemek|cafe|restaurant|restoran", RegexOption.IGNORE_CASE)) -> FOOD
-                description.contains(Regex("taksi|metro|otobus|otobüs|uber", RegexOption.IGNORE_CASE)) -> TRANSPORTATION
-                description.contains(Regex("fatura|elektrik|su|dogalgaz|doğalgaz|internet", RegexOption.IGNORE_CASE)) -> BILLS
-                description.contains(Regex("sinema|tiyatro|konser", RegexOption.IGNORE_CASE)) -> ENTERTAINMENT
-                description.contains(Regex("hastane|eczane|doktor", RegexOption.IGNORE_CASE)) -> HEALTH
-                description.contains(Regex("kurs|kitap|okul", RegexOption.IGNORE_CASE)) -> EDUCATION
-                description.contains(Regex("maaş|gelir|kira geliri", RegexOption.IGNORE_CASE)) -> INCOME
+                lowerDesc.containsAny("market", "restoran", "cafe") -> FOOD
+                lowerDesc.containsAny("giyim", "mağaza") -> SHOPPING
+                lowerDesc.containsAny("fatura", "elektrik", "su", "doğalgaz") -> BILLS
+                lowerDesc.containsAny("taksi", "otobüs", "metro") -> TRANSPORTATION
+                lowerDesc.containsAny("hastane", "eczane") -> HEALTH
+                lowerDesc.containsAny("okul", "kurs") -> EDUCATION
+                lowerDesc.containsAny("sinema", "tiyatro") -> ENTERTAINMENT
+                lowerDesc.containsAny("maaş", "ücret") -> SALARY
                 else -> OTHER
             }
+        }
+
+        private fun String.containsAny(vararg keywords: String): Boolean {
+            return keywords.any { this.contains(it) }
         }
     }
 }

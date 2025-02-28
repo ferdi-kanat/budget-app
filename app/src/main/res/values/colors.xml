@@ -34,4 +34,15 @@
     <color name="success">#4CAF50</color>
     <color name="warning">#FFA000</color>
     <color name="info">#2196F3</color>
+    <color name="category_food">#FF5722</color>
+    <color name="category_shopping">#9C27B0</color>
+    <color name="category_bills">#3F51B5</color>
+    <color name="category_transportation">#009688</color>
+    <color name="category_health">#F44336</color>
+    <color name="category_education">#4CAF50</color>
+    <color name="category_entertainment">#FF9800</color>
+    <color name="category_salary">#8BC34A</color>
+    <color name="category_other">#607D8B</color>
+    <color name="positive_amount">#4CAF50</color>  <!-- Yeşil renk - pozitif tutar -->
+    <color name="negative_amount">#F44336</color>  <!-- Kırmızı renk - negatif tutar -->
 </resources>

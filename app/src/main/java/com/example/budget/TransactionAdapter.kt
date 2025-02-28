@@ -6,14 +6,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
+import java.text.NumberFormat
+import java.util.Locale
 
 class TransactionAdapter(private var transactions: List<TransactionEntity>) :
     RecyclerView.Adapter<TransactionAdapter.ViewHolder>() {
 
     private var onItemClickListener: ((TransactionEntity) -> Unit)? = null
+    private val numberFormat = NumberFormat.getCurrencyInstance(Locale("tr", "TR"))
 
     init {
         setHasStableIds(true)
@@ -39,29 +43,44 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val transaction = transactions[position]
-        
+        val context = holder.itemView.context
+
+        // Temel bilgileri güvenli şekilde ayarla
         holder.description.text = transaction.description
         holder.date.text = transaction.date
         holder.bank.text = transaction.bankName
-        
-        // Tutarı formatlama
-        val amount = transaction.amount
-        holder.amount.text = String.format("%.2f ₺", amount)
-        holder.amount.setTextColor(if (amount >= 0) 
-            Color.parseColor("#4CAF50") else Color.parseColor("#F44336"))
 
-        // Kategori chip'ini ayarlama
-        holder.categoryChip.apply {
-            text = transaction.category.displayName
-            chipBackgroundColor = ColorStateList.valueOf(transaction.category.color)
-            setTextColor(Color.WHITE)
-            contentDescription = holder.itemView.context.getString(
-                R.string.category_chip_description_format,
-                transaction.category.displayName
-            )
+        // Para birimini formatla
+        val amount = transaction.amount
+        holder.amount.apply {
+            text = numberFormat.format(amount)
+            setTextColor(ContextCompat.getColor(context,
+                if (amount >= 0) R.color.positive_amount else R.color.negative_amount))
         }
 
-        // Add click listener to the entire item
+        // Kategori chip'ini ayarla - String'den TransactionCategory'ye dönüştür
+        holder.categoryChip.apply {
+            // String olarak saklanan kategori adını TransactionCategory'ye dönüştür
+            val categoryEnum = TransactionCategory.fromDisplayName(transaction.category)
+
+            text = categoryEnum.displayName
+
+            chipBackgroundColor = ColorStateList.valueOf(
+                ContextCompat.getColor(context, categoryEnum.colorResId))
+
+            setTextColor(Color.WHITE)
+
+            contentDescription = try {
+                context.getString(
+                    R.string.category_chip_description_format,
+                    categoryEnum.displayName
+                )
+            } catch (e: Exception) {
+                categoryEnum.displayName
+            }
+        }
+
+        // Click listener'ı ayarla
         holder.itemView.setOnClickListener {
             onItemClickListener?.invoke(transaction)
         }
@@ -72,7 +91,7 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
     fun updateData(newTransactions: List<TransactionEntity>) {
         val diffCallback = TransactionDiffCallback(transactions, newTransactions)
         val diffResult = DiffUtil.calculateDiff(diffCallback)
-        
+
         transactions = newTransactions
         diffResult.dispatchUpdatesTo(this)
     }
@@ -85,7 +104,7 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
         private val oldList: List<TransactionEntity>,
         private val newList: List<TransactionEntity>
     ) : DiffUtil.Callback() {
-        
+
         override fun getOldListSize() = oldList.size
         override fun getNewListSize() = newList.size
 

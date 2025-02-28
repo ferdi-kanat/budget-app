@@ -53,7 +53,7 @@ import com.github.mikephil.charting.BuildConfig
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import android.app.DatePickerDialog
-
+import com.example.budget.ui.BudgetGoalsActivity
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
 
@@ -384,7 +384,7 @@ class MainActivity : AppCompatActivity() {
                 amount = amount,
                 balance = null,
                 bankName = "Manuel Giriş",
-                category = category
+                category = category.displayName // displayName'i kullan, enum değerini değil
             )
 
             DatabaseProvider.getTransactionDao().insertTransaction(transactionEntity)
@@ -491,7 +491,7 @@ class MainActivity : AppCompatActivity() {
                     amount = transaction.amount.toDouble(),
                     balance = transaction.balance.toDoubleOrNull() ?: 0.0,
                     bankName = transaction.bankName,
-                    category = TransactionCategory.fromDescription(transaction.description)
+                    category = TransactionCategory.fromDescription(transaction.description).displayName
                 )
 
                 try {
@@ -793,6 +793,8 @@ class MainActivity : AppCompatActivity() {
     private interface NavigationActions {
         fun onAnalyticsSelected()
         fun onSettingsSelected()
+        fun onBudgetGoalsSelected() // Yeni eklenen
+
     }
 
     private fun setupNavigationViews() {
@@ -808,11 +810,16 @@ class MainActivity : AppCompatActivity() {
             showError("Navigation yapısı kurulurken hata oluştu: ${e.message}")
         }
     }
-
+    private fun navigateToBudgetGoals() {
+        val intent = Intent(this, BudgetGoalsActivity::class.java)
+        startActivity(intent)
+    }
     private fun createNavigationHandler(): NavigationBarView.OnItemSelectedListener {
         val navigationActions = object : NavigationActions {
             override fun onAnalyticsSelected() = navigateToAnalytics()
             override fun onSettingsSelected() = showSettingsDialog()
+            override fun onBudgetGoalsSelected() = navigateToBudgetGoals()
+
         }
         return NavigationHandler(navigationActions)
     }
@@ -886,6 +893,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.menu_home -> true  // Ana sayfa zaten aktif
                 R.id.menu_analytics -> {
                     actions.onAnalyticsSelected()
+                    true
+                }
+                R.id.menu_budget -> {   // Yeni eklenen
+                    actions.onBudgetGoalsSelected()
                     true
                 }
                 R.id.menu_settings -> {
