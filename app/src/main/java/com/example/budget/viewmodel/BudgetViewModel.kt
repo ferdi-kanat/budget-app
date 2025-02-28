@@ -44,4 +44,25 @@ class BudgetViewModel(private val budgetGoalDao: BudgetGoalDao) : ViewModel() {
         val calendar = Calendar.getInstance()
         return "${calendar.get(Calendar.YEAR)}-${String.format("%02d", calendar.get(Calendar.MONTH) + 1)}"
     }
+
+    fun deleteBudgetGoal(goal: BudgetGoalEntity) {
+        viewModelScope.launch {
+            try {
+                budgetGoalDao.deleteBudgetGoal(goal)
+                updateBudgetProgress()
+            } catch (e: Exception) {
+                _error.value = "Bütçe hedefi silinemedi: ${e.localizedMessage}"
+            }
+        }
+    }
+    fun updateBudgetGoal(goal: BudgetGoalEntity) {
+        viewModelScope.launch {
+            try {
+                budgetGoalDao.updateBudgetGoal(goal)
+                updateBudgetProgress()
+            } catch (e: Exception) {
+                _error.value = "Bütçe hedefi güncellenemedi: ${e.localizedMessage}"
+            }
+        }
+    }
 }

@@ -13,6 +13,8 @@ import java.text.NumberFormat
 import java.util.*
 
 class BudgetGoalAdapter : ListAdapter<BudgetProgress, BudgetGoalAdapter.ViewHolder>(BudgetDiffCallback()) {
+    private var onItemClickListener: ((BudgetProgress) -> Unit)? = null
+    private var onItemLongClickListener: ((BudgetProgress) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemBudgetGoalBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -20,38 +22,47 @@ class BudgetGoalAdapter : ListAdapter<BudgetProgress, BudgetGoalAdapter.ViewHold
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position))
+        holder.bind(getItem(position), onItemClickListener, onItemLongClickListener)
+    }
+    fun setOnItemClickListener(listener: (BudgetProgress) -> Unit) {
+        onItemClickListener = listener
+    }
+
+    fun setOnItemLongClickListener(listener: (BudgetProgress) -> Unit) {
+        onItemLongClickListener = listener
     }
 
     class ViewHolder(private val binding: ItemBudgetGoalBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: BudgetProgress) {
+        // ViewHolder sınıfı içindeki bind metodu
+        fun bind(item: BudgetProgress, onClickListener: ((BudgetProgress) -> Unit)?, onLongClickListener: ((BudgetProgress) -> Unit)?) {
             binding.apply {
                 categoryText.text = item.category
-                
+
                 // Format currency
                 val currencyFormat = NumberFormat.getCurrencyInstance().apply {
                     currency = Currency.getInstance("TRY")
                 }
-                
-                spentText.text = root.context.getString(
+
+                // Sorunlu root referansını itemView ile değiştirelim
+                spentText.text = itemView.context.getString(
                     R.string.spent_amount_format,
                     currencyFormat.format(item.spentAmount)
                 )
-                
-                targetText.text = root.context.getString(
+
+                targetText.text = itemView.context.getString(
                     R.string.target_amount_format,
                     currencyFormat.format(item.targetAmount)
                 )
-                
+
                 // Calculate progress safely
                 val progress = if (item.targetAmount > 0) {
                     ((item.spentAmount / item.targetAmount) * 100)
                         .toInt()
                         .coerceIn(0, 100)
                 } else 0
-                
+
                 progressIndicator.progress = progress
-                
+
                 // Set color based on progress
                 val color = when {
                     progress >= 90 -> R.color.error
@@ -59,8 +70,18 @@ class BudgetGoalAdapter : ListAdapter<BudgetProgress, BudgetGoalAdapter.ViewHold
                     else -> R.color.success
                 }
                 progressIndicator.setIndicatorColor(
-                    ContextCompat.getColor(root.context, color)
+                    ContextCompat.getColor(itemView.context, color)
                 )
+            }
+
+            // Tıklama işleyicileri için binding.root yerine itemView kullanın
+            itemView.setOnClickListener {
+                onClickListener?.invoke(item)
+            }
+
+            itemView.setOnLongClickListener {
+                onLongClickListener?.invoke(item)
+                true
             }
         }
     }

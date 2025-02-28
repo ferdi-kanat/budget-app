@@ -66,4 +66,9 @@
     <string name="spent_amount_format">Harcanan: %s</string>
     <string name="budget_goal_amount_format">Hedef: %s</string>
     <string name="select_category_hint">Kategori seçin</string>
+    <string name="update">Güncelle</string>
+    <string name="delete">Sil</string>
+    <string name="delete_budget_goal">Bütçe Hedefini Sil</string>
+    <string name="delete_budget_goal_confirmation">%s kategorisindeki bütçe hedefini silmek istediğinize emin misiniz?</string>
+    <string name="budget_goal_deleted">Bütçe hedefi silindi</string>
 </resources>

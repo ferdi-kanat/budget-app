@@ -20,6 +20,20 @@ class BudgetGoalBottomSheet : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
     private val viewModel: BudgetViewModel by activityViewModels()
 
+    private var editMode = false
+    private var editGoalId: Long = 0
+    private var initialCategory: String = ""
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            editMode = it.getBoolean("editMode", false)
+            if (editMode) {
+                editGoalId = it.getLong("goalId")
+                initialCategory = it.getString("category", "")
+            }
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -34,6 +48,15 @@ class BudgetGoalBottomSheet : BottomSheetDialogFragment() {
 
         setupCategoryDropdown()
         setupAmountInput()
+
+        // Edit modunda değerleri doldur
+        if (editMode) {
+            binding.categoryDropdown.setText(initialCategory)
+            arguments?.getDouble("amount")?.let {
+                binding.amountInput.setText(it.toString())
+            }
+        }
+
         setupSaveButton()
     }
 
@@ -49,17 +72,30 @@ class BudgetGoalBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun setupSaveButton() {
+        binding.saveButton.text = if (editMode) getString(R.string.update) else getString(R.string.save)
+
         binding.saveButton.setOnClickListener {
             val categoryName = binding.categoryDropdown.text.toString()
             val amount = binding.amountInput.text.toString().toDoubleOrNull() ?: return@setOnClickListener
 
-            viewModel.saveBudgetGoal(
-                BudgetGoalEntity(
-                    category = categoryName,
-                    monthYear = getCurrentMonthYear(),
-                    targetAmount = amount
+            if (editMode) {
+                viewModel.updateBudgetGoal(
+                    BudgetGoalEntity(
+                        id = editGoalId,
+                        category = categoryName,
+                        monthYear = getCurrentMonthYear(),
+                        targetAmount = amount
+                    )
                 )
-            )
+            } else {
+                viewModel.saveBudgetGoal(
+                    BudgetGoalEntity(
+                        category = categoryName,
+                        monthYear = getCurrentMonthYear(),
+                        targetAmount = amount
+                    )
+                )
+            }
             dismiss()
         }
     }
@@ -76,5 +112,16 @@ class BudgetGoalBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "BudgetGoalBottomSheet"
+
+        fun newInstance(goalId: Long, category: String, amount: Double): BudgetGoalBottomSheet {
+            return BudgetGoalBottomSheet().apply {
+                arguments = Bundle().apply {
+                    putLong("goalId", goalId)
+                    putString("category", category)
+                    putDouble("amount", amount)
+                    putBoolean("editMode", true)
+                }
+            }
+        }
     }
 }
