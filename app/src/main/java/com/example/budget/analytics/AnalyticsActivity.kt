@@ -1,5 +1,6 @@
 package com.example.budget.analytics
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
@@ -26,6 +27,11 @@ import android.graphics.Color
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.formatter.DefaultValueFormatter
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.example.budget.MainActivity
+import com.example.budget.ui.BudgetGoalsActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigationrail.NavigationRailView
+import com.google.android.material.navigation.NavigationBarView
 
 class AnalyticsActivity : AppCompatActivity() {
     private lateinit var analytics: AnalyticsResult
@@ -33,6 +39,8 @@ class AnalyticsActivity : AppCompatActivity() {
     private lateinit var categoryChart: PieChart
     private lateinit var bankChart: BarChart
     private lateinit var recyclerView: RecyclerView
+    private lateinit var bottomNavigationView: BottomNavigationView
+    private var navigationRailView: NavigationRailView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +49,7 @@ class AnalyticsActivity : AppCompatActivity() {
         
         initializeViews()
         setupRecyclerView()
+        setupNavigation()
         
         analytics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("analytics", AnalyticsResult::class.java)
@@ -56,6 +65,8 @@ class AnalyticsActivity : AppCompatActivity() {
         monthlyChart = findViewById(R.id.monthlyChart)
         categoryChart = findViewById(R.id.categoryChart)
         bankChart = findViewById(R.id.bankChart)
+        bottomNavigationView = findViewById(R.id.bottomNavigationView)
+        navigationRailView = findViewById(R.id.navigationRail)
 
         // Pre-configure charts
         monthlyChart.apply {
@@ -94,6 +105,51 @@ class AnalyticsActivity : AppCompatActivity() {
             axisRight.isEnabled = false
             setDrawGridBackground(false)
             setTouchEnabled(true)
+        }
+    }
+
+    private fun setupNavigation() {
+        val isLargeScreen = resources.configuration.screenWidthDp >= 600
+
+        if (isLargeScreen) {
+            bottomNavigationView.visibility = View.GONE
+            navigationRailView?.apply {
+                visibility = View.VISIBLE
+                setOnItemSelectedListener(createNavigationHandler())
+                selectedItemId = R.id.menu_analytics
+            }
+        } else {
+            navigationRailView?.visibility = View.GONE
+            bottomNavigationView.apply {
+                visibility = View.VISIBLE
+                setOnItemSelectedListener(createNavigationHandler())
+                selectedItemId = R.id.menu_analytics
+            }
+        }
+    }
+
+    private fun createNavigationHandler() = NavigationBarView.OnItemSelectedListener { item ->
+        when (item.itemId) {
+            R.id.menu_home -> {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+                true
+            }
+            R.id.menu_analytics -> true // Already in Analytics
+            R.id.menu_budget -> {
+                startActivity(Intent(this, BudgetGoalsActivity::class.java))
+                finish()
+                true
+            }
+            R.id.menu_settings -> {
+                // For now, go back to MainActivity to handle settings
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("openSettings", true)
+                startActivity(intent)
+                finish()
+                true
+            }
+            else -> false
         }
     }
 

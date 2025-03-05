@@ -27,7 +27,6 @@ import com.example.budget.parsers.ExcelParser
 import com.example.budget.parsers.PDFParser
 import com.example.budget.utils.ExportUtils
 import com.example.budget.utils.RegexPatterns
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +45,6 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatDelegate
 import android.content.res.Configuration
 import android.content.Context
-import android.widget.Spinner
 import android.widget.ArrayAdapter
 import android.database.sqlite.SQLiteConstraintException
 import com.github.mikephil.charting.BuildConfig
@@ -54,6 +52,9 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import android.app.DatePickerDialog
 import com.example.budget.ui.BudgetGoalsActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.RadioGroup
+import android.widget.AutoCompleteTextView
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
 
@@ -102,6 +103,11 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         initializeAdapter()
         setupNavigationViews()
+
+        // Handle settings intent
+        if (intent.getBooleanExtra("openSettings", false)) {
+            showSettingsDialog()
+        }
     }
 
     private fun initializeViews() {
@@ -113,6 +119,11 @@ class MainActivity : AppCompatActivity() {
         searchView = findViewById(R.id.searchBar)
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         navigationRailView = findViewById(R.id.navigationRail)
+
+        // Initialize FAB and set click listener
+        findViewById<FloatingActionButton>(R.id.fabAddTransaction).setOnClickListener {
+            showAddTransactionDialog()
+        }
 
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
@@ -161,10 +172,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupButtons() {
-        findViewById<Button>(R.id.buttonAddTransaction).setOnClickListener {
-            showAddTransactionDialog()
-        }
-
         findViewById<Button>(R.id.buttonLoadPDF).setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                 type = "application/pdf"
@@ -179,16 +186,8 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(intent, xlsxRequestCode)
         }
 
-        findViewById<Button>(R.id.buttonClearDatabase).setOnClickListener {
-            showClearDatabaseConfirmation()
-        }
-
         findViewById<Button>(R.id.buttonExport).setOnClickListener {
             showExportDialog()
-        }
-
-        findViewById<Button>(R.id.buttonAnalytics).setOnClickListener {
-            launchAnalytics()
         }
     }
 
@@ -262,14 +261,14 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
 
-    private fun showClearDatabaseConfirmation() {
+    /*private fun showClearDatabaseConfirmation() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clear_database_title)
             .setMessage(R.string.clear_database_message)
             .setPositiveButton(R.string.clear) { _, _ -> clearDatabase() }
             .setNegativeButton(R.string.cancel, null)
             .show()
-    }
+    }*/
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -330,39 +329,50 @@ class MainActivity : AppCompatActivity() {
         val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
         val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
         val editTextDate = dialogView.findViewById<EditText>(R.id.editTextDate)
-        val spinnerCategory = dialogView.findViewById<Spinner>(R.id.spinnerCategory)
+        val radioGroupType = dialogView.findViewById<RadioGroup>(R.id.radioGroupTransactionType)
+        val categorySpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
         val buttonSaveTransaction = dialogView.findViewById<Button>(R.id.buttonSaveTransaction)
 
-        // Kategori spinner'ını ayarla
+        // Set up category dropdown
         val categories = TransactionCategory.values()
         val adapter = ArrayAdapter(
             this,
-            android.R.layout.simple_spinner_item,
+            android.R.layout.simple_dropdown_item_1line,
             categories.map { it.displayName }
         )
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerCategory.adapter = adapter
+        categorySpinner.setAdapter(adapter)
 
-        // Varsayılan olarak günün tarihini göster
+        // Show current date by default
         editTextDate.setText(getCurrentDate())
+
+        // Handle date selection
+        editTextDate.setOnClickListener {
+            showDatePicker(editTextDate)
+        }
 
         buttonSaveTransaction.setOnClickListener {
             val description = editTextDescription.text.toString()
-            val amount = editTextAmount.text.toString().toDoubleOrNull() ?: 0.0
+            val amountStr = editTextAmount.text.toString()
             val date = editTextDate.text.toString()
-            val selectedCategory = categories[spinnerCategory.selectedItemPosition]
+            val isIncome = radioGroupType.checkedRadioButtonId == R.id.radioIncome
+            val selectedCategory = categories.find { it.displayName == categorySpinner.text.toString() }
+                ?: categories[0]
 
             if (description.isBlank()) {
-                editTextDescription.error = "Açıklama gerekli"
+                editTextDescription.error = "Description is required"
                 return@setOnClickListener
             }
 
-            if (amount == 0.0) {
-                editTextAmount.error = "Geçerli bir miktar girin"
+            val amount = amountStr.toDoubleOrNull()
+            if (amount == null || amount <= 0) {
+                editTextAmount.error = "Please enter a positive amount"
                 return@setOnClickListener
             }
 
-            saveTransaction(description, amount, date, selectedCategory)
+            // Convert amount to positive or negative based on transaction type
+            val finalAmount = if (isIncome) amount else -amount
+            
+            saveTransaction(description, finalAmount, date, selectedCategory)
             dialog.dismiss()
         }
 
@@ -744,7 +754,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun launchAnalytics() {
+    /*private fun launchAnalytics() {
         lifecycleScope.launch(Dispatchers.IO) {
             val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
             log("ANALYTICS", "Transaction count: ${transactions.size}")
@@ -759,7 +769,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         }
-    }
+    }*/
 
     private fun handleExport(uri: Uri, transactions: List<TransactionEntity>) {
         try {
@@ -962,7 +972,7 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    private fun showDatePicker(editText: TextInputEditText) {
+    private fun showDatePicker(editText: EditText) {
         val calendar = Calendar.getInstance()
         
         // If there's existing text, parse it

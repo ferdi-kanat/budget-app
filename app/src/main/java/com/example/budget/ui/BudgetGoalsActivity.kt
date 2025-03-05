@@ -1,5 +1,6 @@
 package com.example.budget.ui
 
+import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
 import android.view.View
@@ -9,12 +10,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.budget.DatabaseProvider
+import com.example.budget.MainActivity
 import com.example.budget.R
 import com.example.budget.adapter.BudgetGoalAdapter
+import com.example.budget.analytics.AnalyticsActivity
 import com.example.budget.data.dao.BudgetProgress
 import com.example.budget.databinding.ActivityBudgetGoalsBinding
 import com.example.budget.viewmodel.BudgetViewModel
 import com.example.budget.viewmodel.BudgetViewModelFactory
+import com.google.android.material.navigation.NavigationBarView
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import com.google.android.material.snackbar.Snackbar
@@ -36,6 +40,7 @@ class BudgetGoalsActivity : AppCompatActivity() {
         setupToolbar()
         setupRecyclerView()
         setupFab()
+        setupNavigation()
         observeViewModel()
     }
 
@@ -45,6 +50,51 @@ class BudgetGoalsActivity : AppCompatActivity() {
         supportActionBar?.title = getString(R.string.budget_goals)
     }
 
+    private fun setupNavigation() {
+        val isLargeScreen = resources.configuration.screenWidthDp >= 600
+
+        if (isLargeScreen) {
+            binding.bottomNavigationView.visibility = View.GONE
+            binding.navigationRail.apply {
+                visibility = View.VISIBLE
+                setOnItemSelectedListener(createNavigationHandler())
+                selectedItemId = R.id.menu_budget
+            }
+        } else {
+            binding.navigationRail.visibility = View.GONE
+            binding.bottomNavigationView.apply {
+                visibility = View.VISIBLE
+                setOnItemSelectedListener(createNavigationHandler())
+                selectedItemId = R.id.menu_budget
+            }
+        }
+    }
+
+    private fun createNavigationHandler() = NavigationBarView.OnItemSelectedListener { item ->
+        when (item.itemId) {
+            R.id.menu_home -> {
+                startActivity(Intent(this, MainActivity::class.java))
+                finish()
+                true
+            }
+            R.id.menu_analytics -> {
+                startActivity(Intent(this, AnalyticsActivity::class.java))
+                finish()
+                true
+            }
+            R.id.menu_budget -> true // Already in Budget Goals
+            R.id.menu_settings -> {
+                // For now, go back to MainActivity to handle settings
+                val intent = Intent(this, MainActivity::class.java)
+                intent.putExtra("openSettings", true)
+                startActivity(intent)
+                finish()
+                true
+            }
+            else -> false
+        }
+    }
+
     private fun setupRecyclerView() {
         adapter = BudgetGoalAdapter()
         binding.recyclerViewBudgetGoals.apply {
@@ -52,7 +102,6 @@ class BudgetGoalsActivity : AppCompatActivity() {
             adapter = this@BudgetGoalsActivity.adapter
         }
 
-        // Düzenleme için tıklama işleyicisi
         // Düzenleme için tıklama işleyicisi
         adapter.setOnItemClickListener { budgetProgress ->
             // BudgetProgress'i BudgetGoalEntity'ye çevirmen gerekiyor
@@ -82,6 +131,7 @@ class BudgetGoalsActivity : AppCompatActivity() {
             showDeleteConfirmationDialog(budgetProgress)
         }
     }
+
     private fun showDeleteConfirmationDialog(budgetProgress: BudgetProgress) {
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.delete_budget_goal))
@@ -105,10 +155,12 @@ class BudgetGoalsActivity : AppCompatActivity() {
             .setNegativeButton(getString(R.string.cancel), null)
             .show()
     }
+
     private fun getCurrentMonthYear(): String {
         val calendar = Calendar.getInstance()
         return "${calendar.get(Calendar.YEAR)}-${String.format("%02d", calendar.get(Calendar.MONTH) + 1)}"
     }
+
     private fun setupFab() {
         binding.fabAddBudget.setOnClickListener {
             BudgetGoalBottomSheet().show(supportFragmentManager, BudgetGoalBottomSheet.TAG)

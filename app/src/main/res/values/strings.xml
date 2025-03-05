@@ -10,9 +10,9 @@
     <string name="save_transactions">Save Transactions</string>
     <string name="gelir_gider_ekle">Gelir/Gider Ekle</string>
     <string name="hint_description">Açıklama</string>
-    <string name="hint_amount">Miktar</string>
+    <string name="hint_amount">Tutar</string>
     <string name="button_save">Kaydet</string>
-    <string name="hint_date">GG.AA.YYYY</string>
+    <string name="hint_date">Tarih</string>
     <string name="export_data">Verileri Dışa Aktar</string>
     <string name="genel_bak">Genel Bakış</string>
     <string name="kategori_da_l_m">Kategori Dağılımı</string>
@@ -30,13 +30,13 @@
     <string name="analytics_description">İşlem analizlerini görüntüle</string>
     <string name="load_pdf_description">PDF banka ekstresini yükle</string>
     <string name="load_xlsx_description">Excel banka ekstresini yükle</string>
-    <string name="export_data_description">Export transactions to file</string>
+    <string name="export_data_description">İşlemleri dosyaya aktar</string>
     <string name="settings">Ayarlar</string>
     <string name="home">Anasayfa</string>
     <string name="transaction_id_format">ID: %s</string>
     <string name="amount_format">%.2f ₺</string>
-    <string name="transaction_category_content_description">Transaction category</string>
-    <string name="transaction_category_with_name">Transaction category: %s</string>
+    <string name="transaction_category_content_description">İşlem kategorisi</string>
+    <string name="transaction_category_with_name">İşlem kategorisi: %s</string>
     <string name="filter">Filtrele</string>
     <string name="date_filter">Tarih Filtresi</string>
     <string name="start_date">Başlangıç Tarihi</string>
@@ -59,8 +59,8 @@
     <string name="budget_goals">Bütçe Hedefleri</string>
     <string name="no_budget_goals">Henüz hiç bütçe hedefi eklenmedi</string>
     <string name="add_budget_goal_description">Harcama limitlerinizi belirlemek için + butonuna tıklayın</string>
-    <string name="category">kategori</string>
-    <string name="save">kaydet</string>
+    <string name="category">Kategori</string>
+    <string name="save">Kaydet</string>
     <string name="category_dropdown_description">Bütçe hedefi için kategori seçin</string>
     <string name="amount">tutar</string>
     <string name="spent_amount_format">Harcanan: %s</string>
@@ -71,4 +71,6 @@
     <string name="delete_budget_goal">Bütçe Hedefini Sil</string>
     <string name="delete_budget_goal_confirmation">%s kategorisindeki bütçe hedefini silmek istediğinize emin misiniz?</string>
     <string name="budget_goal_deleted">Bütçe hedefi silindi</string>
+    <string name="income">Gelir</string>
+    <string name="expense">Gider</string>
 </resources>
