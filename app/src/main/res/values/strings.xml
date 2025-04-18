@@ -73,4 +73,22 @@
     <string name="budget_goal_deleted">Bütçe hedefi silindi</string>
     <string name="income">Gelir</string>
     <string name="expense">Gider</string>
+    <string name="total_balance">Toplam Bakiye</string>
+    <string name="no_accounts">Henüz Hesap Eklenmedi</string>
+    <string name="add_account_description">Hesaplarınızı eklemek için + butonuna tıklayın</string>
+    <string name="add_account">Hesap Ekle</string>
+    <string name="bank_logo">Banka Logosu</string>
+    <string name="account_name">Hesap Adı</string>
+    <string name="bank_name">Banka Adı</string>
+    <string name="account_type">Hesap Türü</string>
+    <string name="initial_balance">Başlangıç Bakiyesi</string>
+    <string name="accounts">Hesaplar</string>
+    <string name="checking">Vadesiz</string>
+    <string name="savings">Vadeli</string>
+    <string name="credit_card">Kredi Kartı</string>
+    <string name="investment">Yatırım</string>
+    <string name="edit_account">Hesabı Düzenle</string>
+    <string name="delete_account">Hesabı Sil</string>
+    <string name="delete_account_confirmation">%s hesabını silmek istediğinize emin misiniz?</string>
+    <string name="account_deleted">Hesap silindi</string>
 </resources>

@@ -1,0 +1,1036 @@
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                1
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches
+    \debug\backups\java\byRounds\1
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                com
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\backups\java\byRounds\1\com
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                example
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\backups\java\byRounds\1\com\example
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                budget
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\backups\java\byRounds\1\com\example\budget
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                data
+-a----         6.03.2025     12:45          13088 AppDatabase_Impl.java        
+-a----         6.03.2025     12:45          12868 TransactionDao_Impl.java     
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\backups\java\byRounds\1\com\example\budget\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                dao
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\backups\java\byRounds\1\com\example\budget\data\dao
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45          19637 AccountDao_Impl.java
+-a----         6.03.2025     12:45          12961 BudgetGoalDao_Impl.java      
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\classLookups
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45              4 counters.tab
+-a----         6.03.2025     12:45           4096 file-to-id.tab
+-a----         6.03.2025     12:45           4096 file-to-id.tab.keystream    
+-a----         6.03.2025     12:45              8 file-to-id.tab.keystream.len 
+-a----         6.03.2025     12:45              8 file-to-id.tab.len
+-a----         6.03.2025     12:45            169 file-to-id.tab.values.at     
+-a----         6.03.2025     12:45          32768 file-to-id.tab_i
+-a----         6.03.2025     12:45              8 file-to-id.tab_i.len
+-a----         6.03.2025     12:45           4096 id-to-file.tab
+-a----         6.03.2025     12:45           4096 id-to-file.tab.keystream     
+-a----         6.03.2025     12:45              8 id-to-file.tab.keystream.len 
+-a----         6.03.2025     12:45              8 id-to-file.tab.len
+-a----         6.03.2025     12:45           2203 id-to-file.tab.values.at     
+-a----         6.03.2025     12:45          32768 id-to-file.tab_i
+-a----         6.03.2025     12:45              8 id-to-file.tab_i.len
+-a----         6.03.2025     12:45           4096 lookups.tab
+-a----         6.03.2025     12:45           4096 lookups.tab.keystream        
+-a----         6.03.2025     12:45              8 lookups.tab.keystream.len    
+-a----         6.03.2025     12:45              8 lookups.tab.len
+-a----         6.03.2025     12:45            529 lookups.tab.values.at        
+-a----         6.03.2025     12:45          32768 lookups.tab_i
+-a----         6.03.2025     12:45              8 lookups.tab_i.len
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\kspCaches 
+    \debug\symbolLookups
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45              4 counters.tab
+-a----         6.03.2025     12:45           4096 file-to-id.tab
+-a----         6.03.2025     12:45           4096 file-to-id.tab.keystream     
+-a----         6.03.2025     12:45              8 file-to-id.tab.keystream.len 
+-a----         6.03.2025     12:45              8 file-to-id.tab.len
+-a----         6.03.2025     12:45            175 file-to-id.tab.values.at     
+-a----         6.03.2025     12:45          32768 file-to-id.tab_i
+-a----         6.03.2025     12:45              8 file-to-id.tab_i.len
+-a----         6.03.2025     12:45           4096 id-to-file.tab
+-a----         6.03.2025     12:45           4096 id-to-file.tab.keystream     
+-a----         6.03.2025     12:45              8 id-to-file.tab.keystream.len 
+-a----         6.03.2025     12:45              8 id-to-file.tab.len
+-a----         6.03.2025     12:45           2319 id-to-file.tab.values.at     
+-a----         6.03.2025     12:45          32768 id-to-file.tab_i
+-a----         6.03.2025     12:45              8 id-to-file.tab_i.len
+-a----         6.03.2025     12:45           8192 lookups.tab
+-a----         6.03.2025     12:45           8192 lookups.tab.keystream        
+-a----         6.03.2025     12:45              8 lookups.tab.keystream.len    
+-a----         6.03.2025     12:45              8 lookups.tab.len
+-a----         6.03.2025     12:45           4093 lookups.tab.values.at        
+-a----         6.03.2025     12:45          32768 lookups.tab_i
+-a----         6.03.2025     12:45              8 lookups.tab_i.len
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\outputs   
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:46                apk
+d-----         6.03.2025     12:46                logs
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\outputs\a 
+    pk
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:46                debug
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\outputs\a 
+    pk\debug
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:46       22250504 app-debug.apk
+-a----         6.03.2025     12:46            368 output-metadata.json
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\outputs\l 
+    ogs
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:46          54329 manifest-merger-debug-report 
+                                                  .txt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp       
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                compileDebugJavaWithJavac    
+d-----         6.03.2025     12:45                kotlin-classes
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\compi 
+    leDebugJavaWithJavac
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45          53173 previous-compilation-data.bi
+                                                  n
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                debug
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                com
+d-----         6.03.2025     12:45                META-INF
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli
+    n-classes\debug\com
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                example
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                budget
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                adapter
+d-----         6.03.2025     12:45                analytics
+d-----         6.03.2025     12:45                data
+d-----         6.03.2025     12:45                parsers
+d-----         6.03.2025     12:45                ui
+d-----         6.03.2025     12:45                utils
+d-----         6.03.2025     12:45                viewmodel
+d-----         6.03.2025     12:45                views
+-a----         6.03.2025     12:45           1281 AppDatabase.class
+-a----         6.03.2025     12:45           1631 DatabaseProvider$MIGRATION_2 
+                                                  _3$1.class
+-a----         6.03.2025     12:45           2153 DatabaseProvider$MIGRATION_3
+                                                  _4$1.class
+-a----         6.03.2025     12:45           1631 DatabaseProvider$MIGRATION_4 
+                                                  _5$1.class
+-a----         6.03.2025     12:45           4050 DatabaseProvider.class       
+-a----         6.03.2025     12:45           4363 EditableTransactionAdapter$o 
+                                                  nBindViewHolder$$inlined$add 
+                                                  TextChangedListener$default$ 
+                                                  1.class
+-a----         6.03.2025     12:45           4363 EditableTransactionAdapter$o 
+                                                  nBindViewHolder$$inlined$add 
+                                                  TextChangedListener$default$
+                                                  2.class
+-a----         6.03.2025     12:45           2388 EditableTransactionAdapter$T 
+                                                  ransactionViewHolder.class   
+-a----         6.03.2025     12:45           6161 EditableTransactionAdapter.c 
+                                                  lass
+-a----         6.03.2025     12:45           5051 EditTransactionsActivity.cla 
+                                                  ss
+-a----         6.03.2025     12:45           3594 MainActivity$clearDatabase$1 
+                                                  $1.class
+-a----         6.03.2025     12:45           3729 MainActivity$clearDatabase$1 
+                                                  $2.class
+-a----         6.03.2025     12:45           4868 MainActivity$clearDatabase$1
+                                                  .class
+-a----         6.03.2025     12:45           1038 MainActivity$Companion.class 
+-a----         6.03.2025     12:45           1997 MainActivity$createBankkartA 
+                                                  ccountIfNeeded$1.class       
+-a----         6.03.2025     12:45           1878 MainActivity$createDefaultAc 
+                                                  countIfNeeded$1.class        
+-a----         6.03.2025     12:45           1807 MainActivity$createNavigatio 
+                                                  nHandler$navigationActions$1 
+                                                  .class
+-a----         6.03.2025     12:45           2002 MainActivity$createVakifBank
+                                                  AccountIfNeeded$1.class      
+-a----         6.03.2025     12:45           1919 MainActivity$ExportType.clas 
+                                                  s
+-a----         6.03.2025     12:45           3848 MainActivity$filterTransacti 
+                                                  ons$1$1.class
+-a----         6.03.2025     12:45           6502 MainActivity$filterTransacti 
+                                                  ons$1.class
+-a----         6.03.2025     12:45           5392 MainActivity$handlePdfFile$1 
+                                                  $1.class
+-a----         6.03.2025     12:45           3463 MainActivity$handlePdfFile$1 
+                                                  $2.class
+-a----         6.03.2025     12:45           3791 MainActivity$handlePdfFile$1 
+                                                  $3.class
+-a----         6.03.2025     12:45           6404 MainActivity$handlePdfFile$1 
+                                                  .class
+-a----         6.03.2025     12:45           3378 MainActivity$handleXlsxFile$ 
+                                                  1$1.class
+-a----         6.03.2025     12:45           3639 MainActivity$handleXlsxFile$ 
+                                                  1$2.class
+-a----         6.03.2025     12:45           5518 MainActivity$handleXlsxFile$ 
+                                                  1.class
+-a----         6.03.2025     12:45           4353 MainActivity$loadTransaction
+                                                  s$1$1.class
+-a----         6.03.2025     12:45           3813 MainActivity$loadTransaction 
+                                                  s$1$2.class
+-a----         6.03.2025     12:45           7918 MainActivity$loadTransaction 
+                                                  s$1.class
+-a----         6.03.2025     12:45           3649 MainActivity$navigateToAccou 
+                                                  nts$1$1.class
+-a----         6.03.2025     12:45           3840 MainActivity$navigateToAccou 
+                                                  nts$1$2.class
+-a----         6.03.2025     12:45           4613 MainActivity$navigateToAccou
+                                                  nts$1.class
+-a----         6.03.2025     12:45           4177 MainActivity$navigateToAnaly 
+                                                  tics$1$1.class
+-a----         6.03.2025     12:45           3843 MainActivity$navigateToAnaly 
+                                                  tics$1$2.class
+-a----         6.03.2025     12:45           4883 MainActivity$navigateToAnaly 
+                                                  tics$1.class
+-a----         6.03.2025     12:45           3667 MainActivity$navigateToBudge 
+                                                  tGoals$1$1.class
+-a----         6.03.2025     12:45           3864 MainActivity$navigateToBudge
+                                                  tGoals$1$2.class
+-a----         6.03.2025     12:45           4973 MainActivity$navigateToBudge 
+                                                  tGoals$1.class
+-a----         6.03.2025     12:45            667 MainActivity$NavigationActio 
+                                                  ns.class
+-a----         6.03.2025     12:45           2219 MainActivity$NavigationHandl 
+                                                  er.class
+-a----         6.03.2025     12:45           4724 MainActivity$onActivityResul 
+                                                  t$1$1.class
+-a----         6.03.2025     12:45           3407 MainActivity$onActivityResul
+                                                  t$4$1$1.class
+-a----         6.03.2025     12:45           3738 MainActivity$onActivityResul 
+                                                  t$4$1$2.class
+-a----         6.03.2025     12:45           5234 MainActivity$onActivityResul 
+                                                  t$4$1.class
+-a----         6.03.2025     12:45           3673 MainActivity$onCreate$1$1.cl 
+                                                  ass
+-a----         6.03.2025     12:45           3707 MainActivity$onCreate$1$2.cl 
+                                                  ass
+-a----         6.03.2025     12:45           4414 MainActivity$onCreate$1.clas 
+                                                  s
+-a----         6.03.2025     12:45           3845 MainActivity$refreshRecycler
+                                                  View$1$1.class
+-a----         6.03.2025     12:45           4241 MainActivity$refreshRecycler 
+                                                  View$1.class
+-a----         6.03.2025     12:45           3473 MainActivity$saveTransaction 
+                                                  $1$1.class
+-a----         6.03.2025     12:45           5632 MainActivity$saveTransaction 
+                                                  $1.class
+-a----         6.03.2025     12:45           1948 MainActivity$saveTransaction 
+                                                  sToDatabase$1.class
+-a----         6.03.2025     12:45           3605 MainActivity$saveTransaction
+                                                  sToDatabase$3.class
+-a----         6.03.2025     12:45           3885 MainActivity$saveTransaction 
+                                                  sToDatabase$4.class
+-a----         6.03.2025     12:45           2281 MainActivity$setupSearch$1.c 
+                                                  lass
+-a----         6.03.2025     12:45           2284 MainActivity$setupTransactio 
+                                                  nClickListener$1.class       
+-a----         6.03.2025     12:45           6264 MainActivity$showExportDialo 
+                                                  g$1$1.class
+-a----         6.03.2025     12:45           6075 MainActivity$showExportDialo
+                                                  g$1.class
+-a----         6.03.2025     12:45           1832 MainActivity$Transaction$Cre 
+                                                  ator.class
+-a----         6.03.2025     12:45           6537 MainActivity$Transaction.cla 
+                                                  ss
+-a----         6.03.2025     12:45           1921 MainActivity$updateDefaultAc 
+                                                  countBalance$1.class
+-a----         6.03.2025     12:45            816 MainActivity$WhenMappings.cl 
+                                                  ass
+-a----         6.03.2025     12:45          60528 MainActivity.class
+-a----         6.03.2025     12:45           2419 TransactionAdapter$Transacti
+                                                  onDiffCallback.class
+-a----         6.03.2025     12:45           2559 TransactionAdapter$ViewHolde 
+                                                  r.class
+-a----         6.03.2025     12:45           9153 TransactionAdapter.class     
+-a----         6.03.2025     12:45           4709 TransactionCategory$Companio 
+                                                  n.class
+-a----         6.03.2025     12:45           1661 TransactionCategory$Creator. 
+                                                  class
+-a----         6.03.2025     12:45           4581 TransactionCategory.class    
+-a----         6.03.2025     12:45           2594 TransactionDao.class
+-a----         6.03.2025     12:45           2048 TransactionDetailsBottomShee
+                                                  t$Companion.class
+-a----         6.03.2025     12:45           5772 TransactionDetailsBottomShee 
+                                                  t.class
+-a----         6.03.2025     12:45           1989 TransactionEntity$Creator.cl 
+                                                  ass
+-a----         6.03.2025     12:45           6843 TransactionEntity.class      
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\adapter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           2020 AccountAdapter$AccountDiffCa
+                                                  llback.class
+-a----         6.03.2025     12:45           3324 AccountAdapter$AccountViewHo 
+                                                  lder.class
+-a----         6.03.2025     12:45           5928 AccountAdapter.class
+-a----         6.03.2025     12:45           2053 BudgetGoalAdapter$BudgetDiff 
+                                                  Callback.class
+-a----         6.03.2025     12:45           6215 BudgetGoalAdapter$ViewHolder 
+                                                  .class
+-a----         6.03.2025     12:45           4387 BudgetGoalAdapter.class      
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\analytics
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           2502 AnalyticsActivity$prepareCat 
+                                                  egoryData$$inlined$sortedByD 
+                                                  escending$1.class
+-a----         6.03.2025     12:45           2419 AnalyticsActivity$prepareMon 
+                                                  thlyData$$inlined$sortedBy$1 
+                                                  .class
+-a----         6.03.2025     12:45           5103 AnalyticsActivity$setupChart 
+                                                  s$1$1.class
+-a----         6.03.2025     12:45           3958 AnalyticsActivity$setupChart 
+                                                  s$1$2.class
+-a----         6.03.2025     12:45           5086 AnalyticsActivity$setupChart
+                                                  s$1.class
+-a----         6.03.2025     12:45          28121 AnalyticsActivity.class      
+-a----         6.03.2025     12:45           5347 AnalyticsResult$CREATOR.clas 
+                                                  s
+-a----         6.03.2025     12:45           6637 AnalyticsResult.class        
+-a----         6.03.2025     12:45           2500 CategoryAdapter$special$$inl 
+                                                  ined$sortedByDescending$1.cl 
+                                                  ass
+-a----         6.03.2025     12:45           2062 CategoryAdapter$ViewHolder.c 
+                                                  lass
+-a----         6.03.2025     12:45           7340 CategoryAdapter.class       
+-a----         6.03.2025     12:45           3018 TransactionAnalytics$calcula 
+                                                  teBankwiseTotal$lambda$16$$i 
+                                                  nlined$compareBy$1.class     
+-a----         6.03.2025     12:45           2634 TransactionAnalytics$calcula 
+                                                  teBankwiseTotal$lambda$16$$i 
+                                                  nlined$thenBy$1.class        
+-a----         6.03.2025     12:45          13642 TransactionAnalytics.class   
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli
+    n-classes\debug\com\example\budget\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:45                dao
+d-----         6.03.2025     12:45                entity
+-a----         6.03.2025     12:45           5355 AccountEntity.class
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\data\dao
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           2930 AccountDao.class
+-a----         6.03.2025     12:45           2945 BudgetGoalDao.class
+-a----         6.03.2025     12:45           3152 BudgetProgress.class
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli
+    n-classes\debug\com\example\budget\data\entity
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           4440 BudgetGoalEntity.class       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\parsers
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           2839 ExcelParser$readXLSXFile$$in 
+                                                  lined$compareBy$1.class      
+-a----         6.03.2025     12:45           2789 ExcelParser$readXLSXFile$$in
+                                                  lined$thenByDescending$1.cla 
+                                                  ss
+-a----         6.03.2025     12:45            842 ExcelParser$WhenMappings.cla 
+                                                  ss
+-a----         6.03.2025     12:45           6482 ExcelParser.class
+-a----         6.03.2025     12:45           2347 PDFParser.class
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\ui
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           5066 AccountsActivity$observeAcco 
+                                                  unts$1$1.class
+-a----         6.03.2025     12:45           4495 AccountsActivity$observeAcco
+                                                  unts$1.class
+-a----         6.03.2025     12:45           1805 AccountsActivity$setupRecycl 
+                                                  erView$2.class
+-a----         6.03.2025     12:45           1807 AccountsActivity$setupRecycl 
+                                                  erView$3.class
+-a----         6.03.2025     12:45           5014 AccountsActivity$showAddAcco 
+                                                  untDialog$1$1.class
+-a----         6.03.2025     12:45           2596 AccountsActivity$showAddAcco 
+                                                  untDialog$1.class
+-a----         6.03.2025     12:45           5019 AccountsActivity$showDeleteA 
+                                                  ccountDialog$1$1.class      
+-a----         6.03.2025     12:45           5030 AccountsActivity$showEditAcc 
+                                                  ountDialog$1$1.class
+-a----         6.03.2025     12:45           2601 AccountsActivity$showEditAcc 
+                                                  ountDialog$1.class
+-a----         6.03.2025     12:45          21952 AccountsActivity.class       
+-a----         6.03.2025     12:45           2192 BudgetGoalBottomSheet$Compan 
+                                                  ion.class
+-a----         6.03.2025     12:45           2478 BudgetGoalBottomSheet$specia 
+                                                  l$$inlined$activityViewModel 
+                                                  s$default$1.class
+-a----         6.03.2025     12:45           2792 BudgetGoalBottomSheet$specia
+                                                  l$$inlined$activityViewModel 
+                                                  s$default$2.class
+-a----         6.03.2025     12:45           2545 BudgetGoalBottomSheet$specia 
+                                                  l$$inlined$activityViewModel 
+                                                  s$default$3.class
+-a----         6.03.2025     12:45          11840 BudgetGoalBottomSheet.class  
+-a----         6.03.2025     12:45           4473 BudgetGoalsActivity$observeV 
+                                                  iewModel$1$1.class
+-a----         6.03.2025     12:45           3954 BudgetGoalsActivity$observeV 
+                                                  iewModel$1.class
+-a----         6.03.2025     12:45           4204 BudgetGoalsActivity$observeV
+                                                  iewModel$2$1.class
+-a----         6.03.2025     12:45           3945 BudgetGoalsActivity$observeV 
+                                                  iewModel$2.class
+-a----         6.03.2025     12:45           7347 BudgetGoalsActivity$setupRec 
+                                                  yclerView$2$1.class
+-a----         6.03.2025     12:45           2482 BudgetGoalsActivity$setupRec 
+                                                  yclerView$2.class
+-a----         6.03.2025     12:45           1865 BudgetGoalsActivity$setupRec 
+                                                  yclerView$3.class
+-a----         6.03.2025     12:45           7251 BudgetGoalsActivity$showDele
+                                                  teConfirmationDialog$1$1.cla 
+                                                  ss
+-a----         6.03.2025     12:45           2341 BudgetGoalsActivity$special$ 
+                                                  $inlined$viewModels$default$ 
+                                                  1.class
+-a----         6.03.2025     12:45           2136 BudgetGoalsActivity$special$ 
+                                                  $inlined$viewModels$default$ 
+                                                  2.class
+-a----         6.03.2025     12:45           2434 BudgetGoalsActivity$special$
+                                                  $inlined$viewModels$default$ 
+                                                  3.class
+-a----         6.03.2025     12:45           1805 BudgetGoalsActivity$viewMode 
+                                                  l$2.class
+-a----         6.03.2025     12:45          16838 BudgetGoalsActivity.class    
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\utils
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           1370 CurrencyTextWatcher.class    
+-a----         6.03.2025     12:45          10929 ExportUtils.class
+-a----         6.03.2025     12:45           1365 RegexPatterns.class
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\viewmodel
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           4549 BudgetViewModel$deleteBudget 
+                                                  Goal$1.class
+-a----         6.03.2025     12:45           4561 BudgetViewModel$saveBudgetGo 
+                                                  al$1.class
+-a----         6.03.2025     12:45           4554 BudgetViewModel$updateBudget 
+                                                  Goal$1.class
+-a----         6.03.2025     12:45           4565 BudgetViewModel$updateBudget
+                                                  Progress$1.class
+-a----         6.03.2025     12:45           6077 BudgetViewModel.class        
+-a----         6.03.2025     12:45           1904 BudgetViewModelFactory.class 
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\com\example\budget\views
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45           1639 ChartView.class
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\build\tmp\kotli 
+    n-classes\debug\META-INF
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:45             24 app_debug.kotlin_module      
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                androidTest
+d-----         5.03.2025     10:25                main
+d-----         1.12.2024     03:06                test
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\androidTest 
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                java
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\androidTest 
+    \java
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                com
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\androidTest
+    \java\com
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                example
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\androidTest 
+    \java\com\example
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                budget
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\androidTest 
+    \java\com\example\budget
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06            663 ExampleInstrumentedTest.kt   
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main        
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                java
+d-----         6.03.2025     12:07                res
+-a----         5.03.2025     10:25           1784 AndroidManifest.xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java   
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                com
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                example
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         5.03.2025     10:09                budget
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         5.03.2025     07:13                adapter
+d-----         5.03.2025     10:50                analytics
+d-----         5.03.2025     07:12                data
+d-----        26.02.2025     05:52                parsers
+d-----         5.03.2025     07:34                ui
+d-----        28.02.2025     01:31                utils
+d-----        28.02.2025     01:38                viewmodel
+d-----        26.02.2025     11:10                views
+-a----         5.03.2025     07:38            638 AppDatabase.kt
+-a----         5.03.2025     07:38           3971 DatabaseProvider.kt
+-a----        26.02.2025     06:08           1941 EditableTransactionAdapter.k 
+                                                  t
+-a----        26.02.2025     10:49           1704 EditTransactionsActivity.kt  
+-a----         6.03.2025     12:13          47711 MainActivity.kt
+-a----        28.02.2025     01:20           4512 TransactionAdapter.kt        
+-a----        27.02.2025     11:32           1131 TransactionDao.kt
+-a----        28.02.2025     01:22           3008 TransactionDetailsBottomShee
+                                                  t.kt
+-a----         6.03.2025     12:05           2541 TransactionEntity.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\adapter
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5.03.2025     07:13           3348 AccountAdapter.kt
+-a----        28.02.2025     01:54           3953 BudgetGoalAdapter.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\analytics
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5.03.2025     10:50          12972 AnalyticsActivity.kt        
+-a----        27.02.2025     09:20           2174 AnalyticsResult.kt
+-a----        27.02.2025     09:20           1754 CategoryAdapter.kt
+-a----         6.03.2025     12:45           3033 TransactionAnalytics.kt      
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\data
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6.03.2025     12:14                dao
+d-----        28.02.2025     02:22                entity
+-a----         5.03.2025     07:12            455 AccountEntity.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c
+    om\example\budget\data\dao
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:15           1125 AccountDao.kt
+-a----        28.02.2025     01:47           1622 BudgetGoalDao.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\data\entity
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        28.02.2025     02:22            460 BudgetGoalEntity.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\parsers
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:37           3733 ExcelParser.kt
+-a----        27.02.2025     10:15            810 PDFParser.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\ui
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5.03.2025     11:00          13854 AccountsActivity.kt
+-a----        28.02.2025     01:42           4543 BudgetGoalBottomSheet.kt     
+-a----         5.03.2025     10:41           8715 BudgetGoalsActivity.kt       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\utils
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        28.02.2025     01:31            480 CurrencyTextWatcher.kt      
+-a----        27.02.2025     10:43           4124 ExportUtils.kt
+-a----        20.12.2024     03:33            538 RegexPatterns.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\viewmodel
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        28.02.2025     01:38           2527 BudgetViewModel.kt
+-a----        28.02.2025     12:47            608 BudgetViewModelFactory.kt    
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\java\c 
+    om\example\budget\views
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        26.02.2025     11:10            432 ChartView.kt
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res    
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        26.02.2025     11:17                anim
+d-----         6.03.2025     12:08                color
+d-----         5.03.2025     07:31                drawable
+d-----         5.03.2025     07:14                layout
+d-----        27.02.2025     12:13                layout-w600dp
+d-----        28.02.2025     12:53                menu
+d-----        26.02.2025     09:30                mipmap-anydpi
+d-----         1.12.2024     03:06                mipmap-hdpi
+d-----         1.12.2024     03:06                mipmap-mdpi
+d-----         1.12.2024     03:06                mipmap-xhdpi
+d-----         1.12.2024     03:06                mipmap-xxhdpi
+d-----         1.12.2024     03:06                mipmap-xxxhdpi
+d-----         6.03.2025     12:10                values
+d-----        27.02.2025     10:24                values-night
+d-----         1.12.2024     03:06                xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\dr 
+    awable
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5.03.2025     07:37            825 ic_account_balance.xml       
+-a----        28.02.2025     01:49            368 ic_add.xml
+-a----        26.02.2025     09:43            475 ic_analytics.xml
+-a----        28.02.2025     01:51            397 ic_budget.xml
+-a----        28.02.2025     01:52            660 ic_empty_state.xml
+-a----        26.02.2025     09:43            376 ic_home.xml
+-a----         1.12.2024     03:06           5606 ic_launcher_background.xml   
+-a----         1.12.2024     03:06           1702 ic_launcher_foreground.xml   
+-a----        26.02.2025     11:34            980 ic_settings.xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\la 
+    yout
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5.03.2025     10:28           5982 activity_accounts.xml        
+-a----         5.03.2025     06:47           4440 activity_analytics.xml       
+-a----         5.03.2025     06:47           2836 activity_budget_goals.xml    
+-a----        31.12.2024     07:29            646 activity_edit_transactions.x
+                                                  ml
+-a----         5.03.2025     06:10           9595 activity_main.xml
+-a----        28.02.2025     01:33           1875 bottom_sheet_budget_goal.xml 
+-a----        28.02.2025     12:08           2228 bottom_sheet_transaction_det 
+                                                  ails.xml
+-a----         5.03.2025     07:14           3241 dialog_account.xml
+-a----         5.03.2025     06:57           5561 dialog_add_transaction.xml   
+-a----        28.02.2025     12:06           2474 dialog_date_filter.xml       
+-a----         5.03.2025     07:13           2527 item_account.xml
+-a----        28.02.2025     12:39           2292 item_budget_goal.xml
+-a----        27.02.2025     09:20           1384 item_category.xml
+-a----        28.02.2025     01:35            326 item_dropdown.xml
+-a----        27.02.2025     10:46           3492 item_editable_transaction.xm 
+                                                  l
+-a----        28.02.2025     12:48           1209 layout_empty_state.xml       
+-a----        28.02.2025     12:16           2560 transaction_item.xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\la 
+    yout-w600dp
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        28.02.2025     12:26          11667 activity_main.xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\me 
+    nu
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         5.03.2025     07:14            825 bottom_navigation_menu.xml   
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\mi 
+    pmap-anydpi
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        26.02.2025     09:30            343 ic_launcher.xml
+-a----        26.02.2025     09:30            343 ic_launcher_round.xml        
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\mi 
+    pmap-hdpi
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06           1404 ic_launcher.webp
+-a----         1.12.2024     03:06           2898 ic_launcher_round.webp       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\mi 
+    pmap-mdpi
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06            982 ic_launcher.webp
+-a----         1.12.2024     03:06           1772 ic_launcher_round.webp       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\mi 
+    pmap-xhdpi
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06           1900 ic_launcher.webp
+-a----         1.12.2024     03:06           3918 ic_launcher_round.webp       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\mi 
+    pmap-xxhdpi
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06           2884 ic_launcher.webp
+-a----         1.12.2024     03:06           5914 ic_launcher_round.webp       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\mi 
+    pmap-xxxhdpi
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06           3844 ic_launcher.webp
+-a----         1.12.2024     03:06           7778 ic_launcher_round.webp       
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\va 
+    lues
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         6.03.2025     12:10           1926 colors.xml
+-a----         5.03.2025     07:13           5686 strings.xml
+-a----        28.02.2025     02:06           1412 themes.xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\va 
+    lues-night
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        27.02.2025     10:36           1301 colors.xml
+-a----        27.02.2025     10:15             61 themes.xml
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\main\res\xm 
+    l
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06            478 backup_rules.xml
+-a----         1.12.2024     03:06            551 data_extraction_rules.xml    
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\test        
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                java
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\test\java   
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                com
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\test\java\c 
+    om
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                example
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\test\java\c 
+    om\example
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         1.12.2024     03:06                budget
+
+
+    Directory: C:\Users\ferdi\AndroidStudioProjects\Budget\app\src\test\java\c 
+    om\example\budget
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         1.12.2024     03:06            342 ExampleUnitTest.kt

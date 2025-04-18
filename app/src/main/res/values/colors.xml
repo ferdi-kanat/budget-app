@@ -43,6 +43,7 @@
     <color name="category_entertainment">#FF9800</color>
     <color name="category_salary">#8BC34A</color>
     <color name="category_other">#607D8B</color>
-    <color name="positive_amount">#4CAF50</color>  <!-- Yeşil renk - pozitif tutar -->
-    <color name="negative_amount">#F44336</color>  <!-- Kırmızı renk - negatif tutar -->
+    <color name="positive_amount">#4CAF50</color>
+    <color name="negative_amount">#F44336</color>
+    <color name="category_bank">#FF5722</color>
 </resources>

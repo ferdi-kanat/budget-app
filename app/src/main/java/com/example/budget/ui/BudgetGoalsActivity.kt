@@ -73,20 +73,30 @@ class BudgetGoalsActivity : AppCompatActivity() {
     private fun createNavigationHandler() = NavigationBarView.OnItemSelectedListener { item ->
         when (item.itemId) {
             R.id.menu_home -> {
-                startActivity(Intent(this, MainActivity::class.java))
+                // For home, we want to clear the stack and start fresh
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
                 finish()
                 true
             }
             R.id.menu_analytics -> {
-                startActivity(Intent(this, AnalyticsActivity::class.java))
-                finish()
+                val intent = Intent(this, AnalyticsActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                startActivity(intent)
                 true
             }
             R.id.menu_budget -> true // Already in Budget Goals
+            R.id.menu_accounts -> {
+                val intent = Intent(this, AccountsActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                startActivity(intent)
+                true
+            }
             R.id.menu_settings -> {
-                // For now, go back to MainActivity to handle settings
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("openSettings", true)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 startActivity(intent)
                 finish()
                 true
@@ -193,5 +203,17 @@ class BudgetGoalsActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // Reset selected navigation item
+        val isLargeScreen = resources.configuration.screenWidthDp >= 600
+        if (isLargeScreen) {
+            binding.navigationRail.selectedItemId = R.id.menu_budget
+        } else {
+            binding.bottomNavigationView.selectedItemId = R.id.menu_budget
+        }
     }
 }

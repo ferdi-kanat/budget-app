@@ -52,9 +52,13 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import android.app.DatePickerDialog
 import com.example.budget.ui.BudgetGoalsActivity
+import com.example.budget.ui.AccountsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.RadioGroup
 import android.widget.AutoCompleteTextView
+import com.example.budget.data.AccountEntity
+import kotlinx.coroutines.flow.first
+
 @Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity() {
 
@@ -98,15 +102,29 @@ class MainActivity : AppCompatActivity() {
         )
         
         setContentView(R.layout.activity_main)
-        DatabaseProvider.initialize(this)
-        initializeViews()
-        setupListeners()
-        initializeAdapter()
-        setupNavigationViews()
+        
+        // Initialize database and create default account before setting up UI
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                DatabaseProvider.initialize(this@MainActivity)
+                createDefaultAccountIfNeeded()
+                
+                withContext(Dispatchers.Main) {
+                    initializeViews()
+                    setupListeners()
+                    initializeAdapter()
+                    setupNavigationViews()
 
-        // Handle settings intent
-        if (intent.getBooleanExtra("openSettings", false)) {
-            showSettingsDialog()
+                    // Handle settings intent
+                    if (intent.getBooleanExtra("openSettings", false)) {
+                        showSettingsDialog()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showError("Veritabanı başlatılırken hata oluştu: ${e.message}")
+                }
+            }
         }
     }
 
@@ -120,23 +138,32 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView = findViewById(R.id.bottomNavigationView)
         navigationRailView = findViewById(R.id.navigationRail)
 
-        // Initialize FAB and set click listener
-        findViewById<FloatingActionButton>(R.id.fabAddTransaction).setOnClickListener {
-            showAddTransactionDialog()
-        }
-
+        // Initialize adapter first
+        transactionAdapter = TransactionAdapter(mutableListOf())
+        recyclerView.adapter = transactionAdapter
+        
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             setItemViewCacheSize(20)
             setHasFixedSize(true)
         }
+
+        // Initialize FAB and set click listener
+        findViewById<FloatingActionButton>(R.id.fabAddTransaction).setOnClickListener {
+            showAddTransactionDialog()
+        }
+
         setupSearch()
         setupSwipeRefresh()
         setupDateFilter()
+        setupTransactionClickListener()
 
         // Navigation'ı başlangıçta home seçili olarak ayarla
         bottomNavigationView.selectedItemId = R.id.menu_home
         navigationRailView?.selectedItemId = R.id.menu_home
+        
+        // Load transactions after everything is set up
+        loadTransactions()
     }
 
     private fun initializeAdapter() {
@@ -261,15 +288,6 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
 
-    /*private fun showClearDatabaseConfirmation() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.clear_database_title)
-            .setMessage(R.string.clear_database_message)
-            .setPositiveButton(R.string.clear) { _, _ -> clearDatabase() }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }*/
-
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -379,6 +397,48 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private suspend fun createDefaultAccountIfNeeded() {
+        try {
+            val accountDao = DatabaseProvider.getAccountDao(this)
+            val accounts = accountDao.getAllAccounts().first()
+            
+            // Check if default account already exists
+            if (accounts.none { it.bankName == "Manuel Giriş" }) {
+                // Create new default account
+                val account = AccountEntity(
+                    accountId = UUID.randomUUID().toString(),
+                    accountName = "Manuel İşlemler",
+                    bankName = "Manuel Giriş",
+                    balance = 0.0,
+                    accountType = "Vadesiz",
+                    isActive = true
+                )
+                
+                accountDao.insertAccount(account)
+                log("ACCOUNT", "Default account created")
+            }
+        } catch (e: Exception) {
+            log("ACCOUNT_ERROR", "Error creating default account: ${e.message}")
+            throw e
+        }
+    }
+
+    private suspend fun updateDefaultAccountBalance(amount: Double) {
+        try {
+            val accountDao = DatabaseProvider.getAccountDao(this)
+            val accounts = accountDao.getAllAccounts().first()
+            
+            // Find default account
+            accounts.find { it.bankName == "Manuel Giriş" }?.let { account ->
+                accountDao.updateBalance(account.accountId, amount)
+                log("ACCOUNT", "Default account balance updated by: $amount")
+            }
+        } catch (e: Exception) {
+            log("ACCOUNT_ERROR", "Error updating default account balance: ${e.message}")
+            throw e
+        }
+    }
+
     private fun saveTransaction(
         description: String,
         amount: Double,
@@ -394,10 +454,13 @@ class MainActivity : AppCompatActivity() {
                 amount = amount,
                 balance = null,
                 bankName = "Manuel Giriş",
-                category = category.displayName // displayName'i kullan, enum değerini değil
+                category = category.displayName
             )
 
             DatabaseProvider.getTransactionDao().insertTransaction(transactionEntity)
+            
+            // Update default account balance
+            updateDefaultAccountBalance(amount)
 
             withContext(Dispatchers.Main) {
                 refreshRecyclerView()
@@ -443,6 +506,10 @@ class MainActivity : AppCompatActivity() {
                                 val transactions = extractTransactions(pdfText)
                                 log("DEBUG", "Extracted transactions: $transactions")
                                 if (transactions.isNotEmpty()) {
+                                    // Create VakıfBank account if it doesn't exist
+                                    if (bankName == "VakıfBank") {
+                                        createVakifBankAccountIfNeeded(transactions)
+                                    }
                                     launchEditActivity(transactions)
                                 } else {
                                     showError("İşlem bulunamadı")
@@ -471,13 +538,49 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private suspend fun createVakifBankAccountIfNeeded(transactions: List<Transaction>) {
+        try {
+            val accountDao = DatabaseProvider.getAccountDao(this)
+            val accounts = accountDao.getAllAccounts().first()
+            
+            // Check if VakıfBank account already exists
+            if (accounts.none { it.bankName == "VakıfBank" }) {
+                // Get the latest balance from transactions
+                val latestBalance = transactions.lastOrNull()?.balance?.toDoubleOrNull() ?: 0.0
+                
+                // Create new VakıfBank account
+                val account = AccountEntity(
+                    accountId = UUID.randomUUID().toString(),
+                    accountName = "VakıfBank Hesap",
+                    bankName = "VakıfBank",
+                    balance = latestBalance,
+                    accountType = "Vadesiz",
+                    isActive = true
+                )
+                
+                accountDao.insertAccount(account)
+                log("ACCOUNT", "VakıfBank account created with balance: $latestBalance")
+            }
+        } catch (e: Exception) {
+            log("ACCOUNT_ERROR", "Error creating VakıfBank account: ${e.message}")
+            throw e
+        }
+    }
+
     //excel dosyasını okuma fonksiyonu
     private fun handleXlsxFile(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val excelParser = ExcelParser()
                 val transactions = excelParser.readXLSXFile(uri, contentResolver)
-                launchEditActivity(transactions, "Bankkart")
+                if (transactions.isNotEmpty()) {
+                    createBankkartAccountIfNeeded(transactions)
+                    launchEditActivity(transactions, "Bankkart")
+                } else {
+                    withContext(Dispatchers.Main) {
+                        showError("İşlem bulunamadı")
+                    }
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     showError(e.message ?: "Error processing XLSX file")
@@ -485,6 +588,36 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private suspend fun createBankkartAccountIfNeeded(transactions: List<Transaction>) {
+        try {
+            val accountDao = DatabaseProvider.getAccountDao(this)
+            val accounts = accountDao.getAllAccounts().first()
+            
+            // Check if Bankkart account already exists
+            if (accounts.none { it.bankName == "Bankkart" }) {
+                // Get the latest balance from transactions
+                val latestBalance = transactions.lastOrNull()?.balance?.toDoubleOrNull() ?: 0.0
+                
+                // Create new Bankkart account
+                val account = AccountEntity(
+                    accountId = UUID.randomUUID().toString(),
+                    accountName = "Ziraat Hesap",
+                    bankName = "Ziraat",
+                    balance = latestBalance,
+                    accountType = "Vadesiz",
+                    isActive = true
+                )
+                
+                accountDao.insertAccount(account)
+                log("ACCOUNT", "Bankkart account created with balance: $latestBalance")
+            }
+        } catch (e: Exception) {
+            log("ACCOUNT_ERROR", "Error creating Bankkart account: ${e.message}")
+            throw e
+        }
+    }
+
     //veritabanına kaydetme işlemi
     private suspend fun saveTransactionsToDatabase(transactions: List<Transaction>) {
         try {
@@ -501,7 +634,13 @@ class MainActivity : AppCompatActivity() {
                     amount = transaction.amount.toDouble(),
                     balance = transaction.balance.toDoubleOrNull() ?: 0.0,
                     bankName = transaction.bankName,
-                    category = TransactionCategory.fromDescription(transaction.description).displayName
+                    category = if (transaction.bankName != "Manuel Giriş") {
+                        // Bank transactions should be categorized as BANK
+                        TransactionCategory.BANK.displayName
+                    } else {
+                        // Manual transactions use category detection from description
+                        TransactionCategory.fromDescription(transaction.description).displayName
+                    }
                 )
 
                 try {
@@ -537,10 +676,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun clearDatabase() {
         lifecycleScope.launch(Dispatchers.IO) {
-            DatabaseProvider.getTransactionDao().deleteAllTransactions()
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@MainActivity, "Veritabanı temizlendi!", Toast.LENGTH_SHORT).show()
-                refreshRecyclerView()
+            try {
+                // Clear both transactions and accounts
+                DatabaseProvider.getTransactionDao().deleteAllTransactions()
+                DatabaseProvider.getAccountDao(this@MainActivity).deleteAllAccounts()
+                
+                // Recreate the default account
+                createDefaultAccountIfNeeded()
+                
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, "Veritabanı temizlendi!", Toast.LENGTH_SHORT).show()
+                    refreshRecyclerView()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showError("Veritabanı temizlenirken hata oluştu: ${e.message}")
+                }
             }
         }
     }
@@ -803,8 +954,8 @@ class MainActivity : AppCompatActivity() {
     private interface NavigationActions {
         fun onAnalyticsSelected()
         fun onSettingsSelected()
-        fun onBudgetGoalsSelected() // Yeni eklenen
-
+        fun onBudgetGoalsSelected()
+        fun onAccountsSelected()
     }
 
     private fun setupNavigationViews() {
@@ -821,15 +972,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun navigateToBudgetGoals() {
-        val intent = Intent(this, BudgetGoalsActivity::class.java)
-        startActivity(intent)
+        showLoading()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Ensure budget goals are loaded before navigation
+                DatabaseProvider.getBudgetGoalDao(this@MainActivity).getBudgetGoalsForMonth(
+                    SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
+                )
+                
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    val intent = Intent(this@MainActivity, BudgetGoalsActivity::class.java)
+                    startActivity(intent)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    showError("Bütçe hedefleri sayfası yüklenirken hata oluştu: ${e.message}")
+                }
+            }
+        }
     }
     private fun createNavigationHandler(): NavigationBarView.OnItemSelectedListener {
         val navigationActions = object : NavigationActions {
             override fun onAnalyticsSelected() = navigateToAnalytics()
             override fun onSettingsSelected() = showSettingsDialog()
             override fun onBudgetGoalsSelected() = navigateToBudgetGoals()
-
+            override fun onAccountsSelected() = navigateToAccounts()
         }
         return NavigationHandler(navigationActions)
     }
@@ -856,27 +1025,59 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToAnalytics() {
+        showLoading()
         lifecycleScope.launch(Dispatchers.IO) {
-            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
-            val analytics = TransactionAnalytics().analyzeTransactions(transactions)
+            try {
+                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                val analytics = TransactionAnalytics().analyzeTransactions(transactions)
 
-            withContext(Dispatchers.Main) {
-                val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
-                intent.putExtra("analytics", analytics as Parcelable)
-                startActivity(intent)
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
+                    intent.putExtra("analytics", analytics as Parcelable)
+                    startActivity(intent)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    showError("Analiz sayfası yüklenirken hata oluştu: ${e.message}")
+                }
             }
         }
     }
 
     private fun showSettingsDialog() {
-        val options = arrayOf("Veritabanını Temizle", "Dışa Aktar", "Gece Modu", "İptal")
+        val options = arrayOf(
+            "Veritabanını Temizle",
+            "PDF Yükle",
+            "Excel Yükle",
+            "Dışa Aktar",
+            "Gece Modu",
+            "İptal"
+        )
+
         AlertDialog.Builder(this)
             .setTitle("Ayarlar")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> clearDatabase()
-                    1 -> showExportDialog()
-                    2 -> toggleDarkMode()
+                    1 -> {
+                        // PDF Yükle
+                        val pdfIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "application/pdf"
+                        }
+                        startActivityForResult(pdfIntent, pdfRequestCode)
+                    }
+                    2 -> {
+                        // Excel Yükle
+                        val xlsxIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        }
+                        startActivityForResult(xlsxIntent, xlsxRequestCode)
+                    }
+                    3 -> showExportDialog()
+                    4 -> toggleDarkMode()
+                    // 5 -> İptal
                 }
             }
             .show()
@@ -895,6 +1096,27 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private fun navigateToAccounts() {
+        showLoading()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                // Ensure accounts are loaded before navigation
+                DatabaseProvider.getAccountDao(this@MainActivity).getAllAccounts().first()
+                
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    val intent = Intent(this@MainActivity, AccountsActivity::class.java)
+                    startActivity(intent)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    hideLoading()
+                    showError("Hesaplar sayfası yüklenirken hata oluştu: ${e.message}")
+                }
+            }
+        }
+    }
+
     private class NavigationHandler(private val actions: NavigationActions) : 
         NavigationBarView.OnItemSelectedListener {
         
@@ -905,8 +1127,12 @@ class MainActivity : AppCompatActivity() {
                     actions.onAnalyticsSelected()
                     true
                 }
-                R.id.menu_budget -> {   // Yeni eklenen
+                R.id.menu_budget -> {
                     actions.onBudgetGoalsSelected()
+                    true
+                }
+                R.id.menu_accounts -> {
+                    actions.onAccountsSelected()
                     true
                 }
                 R.id.menu_settings -> {

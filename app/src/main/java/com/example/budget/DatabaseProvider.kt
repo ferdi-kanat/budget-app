@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.budget.data.dao.AccountDao
 import com.example.budget.data.dao.BudgetGoalDao
 
 object DatabaseProvider {
@@ -16,8 +17,24 @@ object DatabaseProvider {
                 AppDatabase::class.java,
                 "budget_database"
             )
-                .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .fallbackToDestructiveMigrationOnDowngrade()
                 .build()
+        }
+    }
+
+    private val MIGRATION_2_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("""
+                CREATE TABLE IF NOT EXISTS budget_goals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    category TEXT NOT NULL,
+                    monthYear TEXT NOT NULL,
+                    targetAmount REAL NOT NULL,
+                    createdAt INTEGER NOT NULL,
+                    UNIQUE(category, monthYear)
+                )
+            """)
         }
     }
 
@@ -83,5 +100,12 @@ object DatabaseProvider {
             initialize(context)
         }
         return database?.budgetGoalDao() ?: throw IllegalStateException("Database not initialized")
+    }
+
+    fun getAccountDao(context: Context): AccountDao {
+        if (database == null) {
+            initialize(context)
+        }
+        return database?.accountDao() ?: throw IllegalStateException("Database not initialized")
     }
 }

@@ -36,6 +36,7 @@ enum class TransactionCategory(
     EDUCATION("Eğitim", R.color.category_education),
     ENTERTAINMENT("Eğlence", R.color.category_entertainment),
     SALARY("Maaş", R.color.category_salary),
+    BANK("Banka", R.color.category_bank),
     OTHER("Diğer", R.color.category_other);
 
     companion object {
@@ -46,6 +47,7 @@ enum class TransactionCategory(
         fun fromDescription(description: String): TransactionCategory {
             val lowerDesc = description.lowercase()
             return when {
+                lowerDesc.containsAny("kredi kartı", "borç öde", "havale", "eft", "fast", "nakit avans", "atm") -> BANK
                 lowerDesc.containsAny("market", "restoran", "cafe") -> FOOD
                 lowerDesc.containsAny("giyim", "mağaza") -> SHOPPING
                 lowerDesc.containsAny("fatura", "elektrik", "su", "doğalgaz") -> BILLS

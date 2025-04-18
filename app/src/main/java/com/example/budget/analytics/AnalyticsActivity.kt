@@ -32,6 +32,8 @@ import com.example.budget.ui.BudgetGoalsActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigationrail.NavigationRailView
 import com.google.android.material.navigation.NavigationBarView
+import android.widget.Toast
+import com.example.budget.ui.AccountsActivity
 
 class AnalyticsActivity : AppCompatActivity() {
     private lateinit var analytics: AnalyticsResult
@@ -47,17 +49,19 @@ class AnalyticsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_analytics)
         showLoading()
         
-        initializeViews()
-        setupRecyclerView()
-        setupNavigation()
-        
         analytics = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("analytics", AnalyticsResult::class.java)
         } else {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra("analytics")
-        } ?: return
-
+        } ?: run {
+            showError("Analytics data not found")
+            return
+        }
+        
+        initializeViews()
+        setupRecyclerView()
+        setupNavigation()
         setupCharts()
     }
 
@@ -131,25 +135,46 @@ class AnalyticsActivity : AppCompatActivity() {
     private fun createNavigationHandler() = NavigationBarView.OnItemSelectedListener { item ->
         when (item.itemId) {
             R.id.menu_home -> {
-                startActivity(Intent(this, MainActivity::class.java))
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
                 finish()
                 true
             }
             R.id.menu_analytics -> true // Already in Analytics
             R.id.menu_budget -> {
-                startActivity(Intent(this, BudgetGoalsActivity::class.java))
-                finish()
+                val intent = Intent(this, BudgetGoalsActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                startActivity(intent)
+                true
+            }
+            R.id.menu_accounts -> {
+                val intent = Intent(this, AccountsActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                startActivity(intent)
                 true
             }
             R.id.menu_settings -> {
-                // For now, go back to MainActivity to handle settings
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("openSettings", true)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                 startActivity(intent)
                 finish()
                 true
             }
             else -> false
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // Reset selected navigation item
+        val isLargeScreen = resources.configuration.screenWidthDp >= 600
+        if (isLargeScreen) {
+            navigationRailView?.selectedItemId = R.id.menu_analytics
+        } else {
+            bottomNavigationView.selectedItemId = R.id.menu_analytics
         }
     }
 
@@ -161,62 +186,98 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private fun setupCharts() {
         lifecycleScope.launch(Dispatchers.Default) {
-            val monthlyData = prepareMonthlyData()
-            val categoryData = prepareCategoryData()
-            val bankData = prepareBankData()
+            try {
+                val monthlyData = prepareMonthlyData()
+                val categoryData = prepareCategoryData()
+                val bankData = prepareBankData()
 
-            withContext(Dispatchers.Main) {
-                displayMonthlyChart(monthlyData)
-                displayCategoryChart(categoryData)
-                displayBankChart(bankData)
-                setupGeneralOverview()
-                setupCategoryList()
-                hideLoading()
+                withContext(Dispatchers.Main) {
+                    try {
+                        displayMonthlyChart(monthlyData)
+                        displayCategoryChart(categoryData)
+                        displayBankChart(bankData)
+                        setupGeneralOverview()
+                        setupCategoryList()
+                    } catch (e: Exception) {
+                        showError("Error displaying charts: ${e.message}")
+                    } finally {
+                        hideLoading()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showError("Error preparing chart data: ${e.message}")
+                    hideLoading()
+                }
             }
         }
     }
 
     private fun displayMonthlyChart(data: LineData) {
-        monthlyChart.apply {
-            this.data = data
-            animateY(300)
-            invalidate()
+        if (!::monthlyChart.isInitialized) return
+        monthlyChart.post {
+            try {
+                monthlyChart.apply {
+                    this.data = data
+                    animateY(300)
+                    invalidate()
+                }
+            } catch (e: Exception) {
+                showError("Error displaying monthly chart: ${e.message}")
+            }
         }
     }
 
     private fun displayCategoryChart(data: PieData) {
-        categoryChart.apply {
-            this.data = data
-            animateY(300)
-            invalidate()
+        if (!::categoryChart.isInitialized) return
+        categoryChart.post {
+            try {
+                categoryChart.apply {
+                    this.data = data
+                    animateY(300)
+                    invalidate()
+                }
+            } catch (e: Exception) {
+                showError("Error displaying category chart: ${e.message}")
+            }
         }
     }
 
     private fun displayBankChart(data: BarData) {
-        bankChart.apply {
-            this.data = data
-            animateY(300)
-            invalidate()
+        if (!::bankChart.isInitialized) return
+        bankChart.post {
+            try {
+                bankChart.apply {
+                    this.data = data
+                    animateY(300)
+                    invalidate()
+                }
+            } catch (e: Exception) {
+                showError("Error displaying bank chart: ${e.message}")
+            }
         }
     }
 
     private fun prepareMonthlyData(): LineData {
-        val entries = analytics.monthlyBreakdown.entries
-            .map { (key, value) ->
-                // "YYYY.MM" formatını ay olarak parse et
-                val month = key.split(".")[1].toFloat()
-                Entry(month, value.toFloat())
-            }
-            .sortedBy { it.x }
+        return try {
+            val entries = analytics.monthlyBreakdown.entries
+                .map { (key, value) ->
+                    val month = key.split(".")[1].toFloat()
+                    Entry(month, value.toFloat())
+                }
+                .sortedBy { it.x }
 
-        return LineData(LineDataSet(entries, "Aylık Harcama").apply {
-            color = getColor(R.color.primary)
-            valueTextSize = 12f
-            setDrawFilled(true)
-            fillColor = getColor(R.color.primary_light)
-            setDrawValues(true) // Değerleri göster
-            valueFormatter = DefaultValueFormatter(0) // Tam sayı formatı
-        })
+            LineData(LineDataSet(entries, "Aylık Harcama").apply {
+                color = getColor(R.color.primary)
+                valueTextSize = 12f
+                setDrawFilled(true)
+                fillColor = getColor(R.color.primary_light)
+                setDrawValues(true)
+                valueFormatter = DefaultValueFormatter(0)
+            })
+        } catch (e: Exception) {
+            throw Exception("Error preparing monthly data: ${e.message}")
+        }
     }
 
     private fun setupGeneralOverview() {
@@ -231,36 +292,44 @@ class AnalyticsActivity : AppCompatActivity() {
     }
 
     private fun prepareCategoryData(): PieData {
-        val entries = analytics.categoryBreakdown.entries
-            .filter { it.value > 0 } // Sadece pozitif değerleri göster
-            .map { PieEntry(it.value.toFloat(), it.key) }
-            .sortedByDescending { it.value }
+        return try {
+            val entries = analytics.categoryBreakdown.entries
+                .filter { it.value > 0 }
+                .map { PieEntry(it.value.toFloat(), it.key) }
+                .sortedByDescending { it.value }
 
-        val dataSet = PieDataSet(entries, "Kategori Dağılımı").apply {
-            colors = ColorTemplate.MATERIAL_COLORS.toList()
-            valueTextSize = 12f
-            valueFormatter = PercentFormatter(categoryChart)
-            setDrawValues(true)
-            valueTextColor = Color.WHITE
-        }
+            val dataSet = PieDataSet(entries, "Kategori Dağılımı").apply {
+                colors = ColorTemplate.MATERIAL_COLORS.toList()
+                valueTextSize = 12f
+                valueFormatter = PercentFormatter(categoryChart)
+                setDrawValues(true)
+                valueTextColor = Color.WHITE
+            }
 
-        return PieData(dataSet).apply {
-            setValueFormatter(PercentFormatter())
-            setValueTextSize(12f)
-            setValueTextColor(Color.WHITE)
+            PieData(dataSet).apply {
+                setValueFormatter(PercentFormatter())
+                setValueTextSize(12f)
+                setValueTextColor(Color.WHITE)
+            }
+        } catch (e: Exception) {
+            throw Exception("Error preparing category data: ${e.message}")
         }
     }
 
     private fun prepareBankData(): BarData {
-        val entries = analytics.bankBreakdown.entries
-            .mapIndexed { index, entry -> 
-                BarEntry(index.toFloat(), abs(entry.value.toFloat()))
-            }
+        return try {
+            val entries = analytics.bankBreakdown.entries
+                .mapIndexed { index, entry -> 
+                    BarEntry(index.toFloat(), abs(entry.value.toFloat()))
+                }
 
-        return BarData(BarDataSet(entries, "Banka Dağılımı").apply {
-            colors = ColorTemplate.MATERIAL_COLORS.toList()
-            valueTextSize = 12f
-        })
+            BarData(BarDataSet(entries, "Banka Dağılımı").apply {
+                colors = ColorTemplate.MATERIAL_COLORS.toList()
+                valueTextSize = 12f
+            })
+        } catch (e: Exception) {
+            throw Exception("Error preparing bank data: ${e.message}")
+        }
     }
 
     private fun setupCategoryList() {
@@ -273,5 +342,9 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private fun hideLoading() {
         findViewById<View>(R.id.progressBar).visibility = View.GONE
+    }
+
+    private fun showError(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 } 
