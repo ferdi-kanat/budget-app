@@ -64,13 +64,15 @@
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="?attr/colorOutline">
+                    app:strokeColor="?attr/colorOutline"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="16dp"
+                        android:visibility="gone">
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonLoadPDF"
@@ -82,6 +84,7 @@
                             android:paddingHorizontal="24dp"
                             android:text="@string/load_pdf"
                             android:contentDescription="@string/load_pdf_description"
+                            android:visibility="gone"
                             style="@style/Widget.Material3.Button.TonalButton"/>
 
                         <com.google.android.material.button.MaterialButton
@@ -94,6 +97,7 @@
                             android:paddingHorizontal="24dp"
                             android:text="@string/load_xlsx"
                             android:contentDescription="@string/load_xlsx_description"
+                            android:visibility="gone"
                             style="@style/Widget.Material3.Button.TonalButton"/>
 
                         <com.google.android.material.button.MaterialButton
@@ -106,6 +110,7 @@
                             android:paddingHorizontal="24dp"
                             android:text="@string/export"
                             android:contentDescription="@string/export_description"
+                            android:visibility="gone"
                             style="@style/Widget.Material3.Button.TonalButton"/>
 
                     </LinearLayout>
@@ -121,13 +126,15 @@
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp"
                     app:strokeWidth="1dp"
-                    app:strokeColor="?attr/colorOutline">
+                    app:strokeColor="?attr/colorOutline"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="16dp"
+                        android:visibility="gone">
 
                         <com.google.android.material.textview.MaterialTextView
                             android:id="@+id/textViewResult"
@@ -149,8 +156,6 @@
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginVertical="8dp"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="4dp"
                     app:strokeWidth="1dp"
@@ -159,9 +164,7 @@
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewTransactions"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:clipToPadding="false"
-                        android:padding="8dp"/>
+                        android:layout_height="wrap_content"/>
 
                 </com.google.android.material.card.MaterialCardView>
 

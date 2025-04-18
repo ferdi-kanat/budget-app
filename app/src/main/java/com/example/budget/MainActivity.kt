@@ -57,6 +57,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.RadioGroup
 import android.widget.AutoCompleteTextView
 import com.example.budget.data.AccountEntity
+import com.example.budget.utils.AutoBackupManager
+import com.example.budget.utils.BackupUtils
 import kotlinx.coroutines.flow.first
 
 @Suppress("DEPRECATION")
@@ -80,6 +82,8 @@ class MainActivity : AppCompatActivity() {
         private const val EDIT_TRANSACTIONS_REQUEST = 100
         private const val PREFS_NAME = "BudgetPrefs"
         private const val DARK_MODE_KEY = "dark_mode"
+        private const val BACKUP_REQUEST_CODE = 5
+        private const val RESTORE_REQUEST_CODE = 6
     }
     private var tempSelectedBank: String? = null
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -328,6 +332,44 @@ class MainActivity : AppCompatActivity() {
                                 Log.e("EXPORT_ERROR", "Dışa aktarma hatası", e)
                                 withContext(Dispatchers.Main) {
                                     showError("Dışa aktarma hatası: ${e.message}")
+                                }
+                            }
+                        }
+                    }
+                }
+                BACKUP_REQUEST_CODE -> {
+                    data?.data?.let { uri ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                                BackupUtils.createBackup(this@MainActivity, transactions, uri)
+                                withContext(Dispatchers.Main) {
+                                    showSuccess("Yedekleme başarılı")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("BACKUP_ERROR", "Backup failed", e)
+                                withContext(Dispatchers.Main) {
+                                    showError("Yedekleme hatası: ${e.message}")
+                                }
+                            }
+                        }
+                    }
+                }
+                RESTORE_REQUEST_CODE -> {
+                    data?.data?.let { uri ->
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                val transactions = BackupUtils.restoreFromBackup(this@MainActivity, uri)
+                                DatabaseProvider.getTransactionDao().deleteAllTransactions()
+                                DatabaseProvider.getTransactionDao().insertTransactions(transactions)
+                                withContext(Dispatchers.Main) {
+                                    refreshRecyclerView()
+                                    showSuccess("Geri yükleme başarılı")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("RESTORE_ERROR", "Restore failed", e)
+                                withContext(Dispatchers.Main) {
+                                    showError("Geri yükleme hatası: ${e.message}")
                                 }
                             }
                         }
@@ -959,89 +1001,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationViews() {
-        bottomNavigationView = findViewById(R.id.bottomNavigationView)
-        navigationRailView = findViewById(R.id.navigationRail)
-
-        val isLargeScreen = resources.configuration.screenWidthDp >= 600
-        val navigationHandler = createNavigationHandler()
-
-        try {
-            setupNavigationBasedOnScreenSize(isLargeScreen, navigationHandler)
-        } catch (e: Exception) {
-            showError("Navigation yapısı kurulurken hata oluştu: ${e.message}")
+        bottomNavigationView.setOnItemSelectedListener { menuItem ->
+            handleNavigationItemSelected(menuItem)
+            true
+        }
+        navigationRailView?.setOnItemSelectedListener { menuItem ->
+            handleNavigationItemSelected(menuItem)
+            true
         }
     }
-    private fun navigateToBudgetGoals() {
-        showLoading()
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Ensure budget goals are loaded before navigation
-                DatabaseProvider.getBudgetGoalDao(this@MainActivity).getBudgetGoalsForMonth(
-                    SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
-                )
-                
-                withContext(Dispatchers.Main) {
-                    hideLoading()
-                    val intent = Intent(this@MainActivity, BudgetGoalsActivity::class.java)
-                    startActivity(intent)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    hideLoading()
-                    showError("Bütçe hedefleri sayfası yüklenirken hata oluştu: ${e.message}")
-                }
+
+    private fun handleNavigationItemSelected(menuItem: MenuItem) {
+        when (menuItem.itemId) {
+            R.id.menu_home -> {
+                // Already on home
             }
-        }
-    }
-    private fun createNavigationHandler(): NavigationBarView.OnItemSelectedListener {
-        val navigationActions = object : NavigationActions {
-            override fun onAnalyticsSelected() = navigateToAnalytics()
-            override fun onSettingsSelected() = showSettingsDialog()
-            override fun onBudgetGoalsSelected() = navigateToBudgetGoals()
-            override fun onAccountsSelected() = navigateToAccounts()
-        }
-        return NavigationHandler(navigationActions)
-    }
-
-    private fun setupNavigationBasedOnScreenSize(
-        isLargeScreen: Boolean,
-        navigationHandler: NavigationBarView.OnItemSelectedListener
-    ) {
-        if (isLargeScreen) {
-            bottomNavigationView.visibility = View.GONE
-            navigationRailView?.apply {
-                visibility = View.VISIBLE
-                setOnItemSelectedListener(navigationHandler)
-                selectedItemId = R.id.menu_home
+            R.id.menu_analytics -> {
+                val intent = Intent(this, AnalyticsActivity::class.java)
+                startActivity(intent)
             }
-        } else {
-            navigationRailView?.visibility = View.GONE
-            bottomNavigationView.apply {
-                visibility = View.VISIBLE
-                setOnItemSelectedListener(navigationHandler)
-                selectedItemId = R.id.menu_home
+            R.id.menu_budget -> {
+                val intent = Intent(this, BudgetGoalsActivity::class.java)
+                startActivity(intent)
             }
-        }
-    }
-
-    private fun navigateToAnalytics() {
-        showLoading()
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
-                val analytics = TransactionAnalytics().analyzeTransactions(transactions)
-
-                withContext(Dispatchers.Main) {
-                    hideLoading()
-                    val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
-                    intent.putExtra("analytics", analytics as Parcelable)
-                    startActivity(intent)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    hideLoading()
-                    showError("Analiz sayfası yüklenirken hata oluştu: ${e.message}")
-                }
+            R.id.menu_accounts -> {
+                val intent = Intent(this, AccountsActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.menu_settings -> {
+                showSettingsDialog()
             }
         }
     }
@@ -1052,6 +1040,8 @@ class MainActivity : AppCompatActivity() {
             "PDF Yükle",
             "Excel Yükle",
             "Dışa Aktar",
+            "Yedekle/Geri Yükle",
+            "Otomatik Yedekleme",
             "Gece Modu",
             "İptal"
         )
@@ -1076,8 +1066,31 @@ class MainActivity : AppCompatActivity() {
                         startActivityForResult(xlsxIntent, xlsxRequestCode)
                     }
                     3 -> showExportDialog()
-                    4 -> toggleDarkMode()
-                    // 5 -> İptal
+                    4 -> showBackupRestoreDialog()
+                    5 -> showAutoBackupDialog()
+                    6 -> toggleDarkMode()
+                    // 7 -> İptal
+                }
+            }
+            .show()
+    }
+
+    private fun showAutoBackupDialog() {
+        val autoBackupManager = AutoBackupManager(this)
+        val options = arrayOf("Otomatik Yedeklemeyi Başlat", "Otomatik Yedeklemeyi Durdur")
+        
+        AlertDialog.Builder(this)
+            .setTitle("Otomatik Yedekleme")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        autoBackupManager.scheduleWeeklyBackup()
+                        showSuccess("Otomatik yedekleme başlatıldı")
+                    }
+                    1 -> {
+                        autoBackupManager.cancelAutoBackup()
+                        showSuccess("Otomatik yedekleme durduruldu")
+                    }
                 }
             }
             .show()
@@ -1094,54 +1107,6 @@ class MainActivity : AppCompatActivity() {
             if (!isDarkMode) AppCompatDelegate.MODE_NIGHT_YES
             else AppCompatDelegate.MODE_NIGHT_NO
         )
-    }
-
-    private fun navigateToAccounts() {
-        showLoading()
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                // Ensure accounts are loaded before navigation
-                DatabaseProvider.getAccountDao(this@MainActivity).getAllAccounts().first()
-                
-                withContext(Dispatchers.Main) {
-                    hideLoading()
-                    val intent = Intent(this@MainActivity, AccountsActivity::class.java)
-                    startActivity(intent)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    hideLoading()
-                    showError("Hesaplar sayfası yüklenirken hata oluştu: ${e.message}")
-                }
-            }
-        }
-    }
-
-    private class NavigationHandler(private val actions: NavigationActions) : 
-        NavigationBarView.OnItemSelectedListener {
-        
-        override fun onNavigationItemSelected(item: MenuItem): Boolean {
-            return when (item.itemId) {
-                R.id.menu_home -> true  // Ana sayfa zaten aktif
-                R.id.menu_analytics -> {
-                    actions.onAnalyticsSelected()
-                    true
-                }
-                R.id.menu_budget -> {
-                    actions.onBudgetGoalsSelected()
-                    true
-                }
-                R.id.menu_accounts -> {
-                    actions.onAccountsSelected()
-                    true
-                }
-                R.id.menu_settings -> {
-                    actions.onSettingsSelected()
-                    true
-                }
-                else -> false
-            }
-        }
     }
 
     private fun setupTransactionClickListener() {
@@ -1220,5 +1185,35 @@ class MainActivity : AppCompatActivity() {
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
         ).show()
+    }
+
+    private fun showBackupRestoreDialog() {
+        val options = arrayOf("Yedekle", "Geri Yükle")
+        AlertDialog.Builder(this)
+            .setTitle("Yedekleme ve Geri Yükleme")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> createBackup()
+                    1 -> restoreFromBackup()
+                }
+            }
+            .show()
+    }
+
+    private fun createBackup() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, BackupUtils.getBackupFilename())
+        }
+        startActivityForResult(intent, BACKUP_REQUEST_CODE)
+    }
+
+    private fun restoreFromBackup() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+        }
+        startActivityForResult(intent, RESTORE_REQUEST_CODE)
     }
 }
