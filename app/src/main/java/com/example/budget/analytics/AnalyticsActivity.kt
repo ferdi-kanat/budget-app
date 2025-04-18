@@ -34,6 +34,7 @@ import com.google.android.material.navigationrail.NavigationRailView
 import com.google.android.material.navigation.NavigationBarView
 import android.widget.Toast
 import com.example.budget.ui.AccountsActivity
+import com.example.budget.DatabaseProvider
 
 class AnalyticsActivity : AppCompatActivity() {
     private lateinit var analytics: AnalyticsResult
@@ -346,5 +347,28 @@ class AnalyticsActivity : AppCompatActivity() {
 
     private fun showError(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshAnalyticsData()
+    }
+
+    private fun refreshAnalyticsData() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                val newAnalytics = TransactionAnalytics().analyzeTransactions(transactions)
+                
+                withContext(Dispatchers.Main) {
+                    analytics = newAnalytics
+                    setupCharts()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showError("Error refreshing analytics: ${e.message}")
+                }
+            }
+        }
     }
 } 

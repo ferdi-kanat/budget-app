@@ -1017,8 +1017,22 @@ class MainActivity : AppCompatActivity() {
                 // Already on home
             }
             R.id.menu_analytics -> {
-                val intent = Intent(this, AnalyticsActivity::class.java)
-                startActivity(intent)
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                        val analytics = TransactionAnalytics().analyzeTransactions(transactions)
+                        
+                        withContext(Dispatchers.Main) {
+                            val intent = Intent(this@MainActivity, AnalyticsActivity::class.java)
+                            intent.putExtra("analytics", analytics as Parcelable)
+                            startActivity(intent)
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            showError("Analytics error: ${e.message}")
+                        }
+                    }
+                }
             }
             R.id.menu_budget -> {
                 val intent = Intent(this, BudgetGoalsActivity::class.java)
