@@ -190,13 +190,22 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
         return count
     }
 
-    fun updateData(newTransactions: List<TransactionEntity>) {
-        val diffCallback = TransactionDiffCallback(transactions, newTransactions)
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
-
-        transactions = newTransactions
+    fun submitNewData(newTransactions: List<TransactionEntity>) {
+        val oldSize = transactions.size
+        transactions = newTransactions.toList()
         groupTransactions()
-        diffResult.dispatchUpdatesTo(this)
+        if (oldSize > 0) {
+            notifyItemRangeRemoved(0, oldSize)
+        }
+        if (transactions.isNotEmpty()) {
+            notifyItemRangeInserted(0, transactions.size)
+        }
+    }
+
+    fun updateData(newTransactions: List<TransactionEntity>) {
+        transactions = newTransactions.toList()
+        groupTransactions()
+        notifyDataSetChanged()
     }
 
     fun setOnItemClickListener(listener: (TransactionEntity) -> Unit) {

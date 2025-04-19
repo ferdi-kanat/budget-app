@@ -360,9 +360,34 @@ class MainActivity : AppCompatActivity() {
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
                                 val transactions = BackupUtils.restoreFromBackup(this@MainActivity, uri)
+                                
+                                // First, clear the database
                                 DatabaseProvider.getTransactionDao().deleteAllTransactions()
+                                DatabaseProvider.getAccountDao(this@MainActivity).deleteAllAccounts()
+                                
+                                // Create default account first
+                                createDefaultAccountIfNeeded()
+                                
+                                // Group transactions by bank to create/update accounts
+                                val transactionsByBank = transactions.groupBy { it.bankName }
+                                
+                                // Create/update accounts based on transactions
+                                transactionsByBank.forEach { (bankName, bankTransactions) ->
+                                    when (bankName) {
+                                        "VakıfBank" -> {
+                                            createVakifBankAccountIfNeeded(convertToTransactionList(bankTransactions))
+                                        }
+                                        "Bankkart" -> {
+                                            createBankkartAccountIfNeeded(convertToTransactionList(bankTransactions))
+                                        }
+                                    }
+                                }
+                                
+                                // Insert all transactions
                                 DatabaseProvider.getTransactionDao().insertTransactions(transactions)
+                                
                                 withContext(Dispatchers.Main) {
+                                    // Update RecyclerView with new data
                                     refreshRecyclerView()
                                     showSuccess("Geri yükleme başarılı")
                                 }
@@ -709,9 +734,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshRecyclerView() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
-            withContext(Dispatchers.Main) {
-                transactionAdapter.updateData(transactions)
+            try {
+                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                withContext(Dispatchers.Main) {
+                    // Update adapter with new data in a single operation
+                    transactionAdapter.submitNewData(transactions)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    showError("Error refreshing transactions: ${e.message}")
+                }
             }
         }
     }
@@ -1229,5 +1261,19 @@ class MainActivity : AppCompatActivity() {
             type = "application/json"
         }
         startActivityForResult(intent, RESTORE_REQUEST_CODE)
+    }
+
+    private fun convertToTransactionList(entities: List<TransactionEntity>): List<Transaction> {
+        return entities.map { entity ->
+            Transaction(
+                date = entity.date,
+                time = entity.time,
+                transactionId = entity.transactionId,
+                amount = entity.amount.toString(),
+                balance = entity.balance?.toString() ?: "0.0",
+                description = entity.description,
+                bankName = entity.bankName
+            )
+        }
     }
 }
