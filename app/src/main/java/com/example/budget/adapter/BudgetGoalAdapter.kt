@@ -1,98 +1,66 @@
 package com.example.budget.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.budget.R
-import com.example.budget.data.dao.BudgetProgress
-import com.example.budget.databinding.ItemBudgetGoalBinding
-import java.text.NumberFormat
-import java.util.*
+import com.example.budget.data.BudgetProgress
+import com.google.android.material.progressindicator.LinearProgressIndicator
 
-class BudgetGoalAdapter : ListAdapter<BudgetProgress, BudgetGoalAdapter.ViewHolder>(BudgetDiffCallback()) {
-    private var onItemClickListener: ((BudgetProgress) -> Unit)? = null
-    private var onItemLongClickListener: ((BudgetProgress) -> Unit)? = null
+class BudgetGoalAdapter(
+    private val onEditClick: (BudgetProgress) -> Unit,
+    private val onDeleteClick: (BudgetProgress) -> Unit
+) : ListAdapter<BudgetProgress, BudgetGoalAdapter.ViewHolder>(BudgetProgressDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = ItemBudgetGoalBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_budget_goal, parent, false)
+        return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(getItem(position), onItemClickListener, onItemLongClickListener)
-    }
-    fun setOnItemClickListener(listener: (BudgetProgress) -> Unit) {
-        onItemClickListener = listener
+        val budgetProgress = getItem(position)
+        holder.bind(budgetProgress)
     }
 
-    fun setOnItemLongClickListener(listener: (BudgetProgress) -> Unit) {
-        onItemLongClickListener = listener
-    }
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val categoryTextView: TextView = itemView.findViewById(R.id.categoryText)
+        private val progressBar: LinearProgressIndicator = itemView.findViewById(R.id.progressIndicator)
+        private val spentTextView: TextView = itemView.findViewById(R.id.spentText)
+        private val targetTextView: TextView = itemView.findViewById(R.id.targetText)
 
-    class ViewHolder(private val binding: ItemBudgetGoalBinding) : RecyclerView.ViewHolder(binding.root) {
-        // ViewHolder sınıfı içindeki bind metodu
-        fun bind(item: BudgetProgress, onClickListener: ((BudgetProgress) -> Unit)?, onLongClickListener: ((BudgetProgress) -> Unit)?) {
-            binding.apply {
-                categoryText.text = item.category
+        fun bind(budgetProgress: BudgetProgress) {
+            categoryTextView.text = budgetProgress.category
+            val progress = (budgetProgress.spentAmount / budgetProgress.targetAmount * 100).toInt()
+            progressBar.progress = progress
+            spentTextView.text = itemView.context.getString(
+                R.string.spent_amount_format,
+                budgetProgress.spentAmount
+            )
+            targetTextView.text = itemView.context.getString(
+                R.string.target_amount_format,
+                budgetProgress.targetAmount
+            )
 
-                // Format currency
-                val currencyFormat = NumberFormat.getCurrencyInstance().apply {
-                    currency = Currency.getInstance("TRY")
-                }
-
-                // Sorunlu root referansını itemView ile değiştirelim
-                spentText.text = itemView.context.getString(
-                    R.string.spent_amount_format,
-                    currencyFormat.format(item.spentAmount)
-                )
-
-                targetText.text = itemView.context.getString(
-                    R.string.target_amount_format,
-                    currencyFormat.format(item.targetAmount)
-                )
-
-                // Calculate progress safely
-                val progress = if (item.targetAmount > 0) {
-                    ((item.spentAmount / item.targetAmount) * 100)
-                        .toInt()
-                        .coerceIn(0, 100)
-                } else 0
-
-                progressIndicator.progress = progress
-
-                // Set color based on progress
-                val color = when {
-                    progress >= 90 -> R.color.error
-                    progress >= 75 -> R.color.warning
-                    else -> R.color.success
-                }
-                progressIndicator.setIndicatorColor(
-                    ContextCompat.getColor(itemView.context, color)
-                )
-            }
-
-            // Tıklama işleyicileri için binding.root yerine itemView kullanın
-            itemView.setOnClickListener {
-                onClickListener?.invoke(item)
-            }
-
-            itemView.setOnLongClickListener {
-                onLongClickListener?.invoke(item)
+            itemView.setOnClickListener { onEditClick(budgetProgress) }
+            itemView.setOnLongClickListener { 
+                onDeleteClick(budgetProgress)
                 true
             }
         }
     }
+}
 
-    private class BudgetDiffCallback : DiffUtil.ItemCallback<BudgetProgress>() {
-        override fun areItemsTheSame(oldItem: BudgetProgress, newItem: BudgetProgress): Boolean {
-            return oldItem.category == newItem.category
-        }
+private class BudgetProgressDiffCallback : DiffUtil.ItemCallback<BudgetProgress>() {
+    override fun areItemsTheSame(oldItem: BudgetProgress, newItem: BudgetProgress): Boolean {
+        return oldItem.category == newItem.category
+    }
 
-        override fun areContentsTheSame(oldItem: BudgetProgress, newItem: BudgetProgress): Boolean {
-            return oldItem == newItem
-        }
+    override fun areContentsTheSame(oldItem: BudgetProgress, newItem: BudgetProgress): Boolean {
+        return oldItem == newItem
     }
 }

@@ -5,107 +5,135 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.budget.data.dao.AccountDao
+import com.example.budget.data.dao.AutomaticTransactionDao
+import com.example.budget.data.dao.TransactionDao
 import com.example.budget.data.dao.BudgetGoalDao
 
 object DatabaseProvider {
     private var database: AppDatabase? = null
+    private var transactionDao: TransactionDao? = null
+    private var accountDao: AccountDao? = null
+    private var automaticTransactionDao: AutomaticTransactionDao? = null
+    private var budgetGoalDao: BudgetGoalDao? = null
 
     fun initialize(context: Context) {
         if (database == null) {
-            database = Room.databaseBuilder(
+            getDatabase(context)
+        }
+    }
+
+    fun getDatabase(context: Context): AppDatabase {
+        return database ?: synchronized(this) {
+            val instance = Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
                 "budget_database"
             )
-                .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
-                .fallbackToDestructiveMigrationOnDowngrade()
-                .build()
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7
+            )
+            .fallbackToDestructiveMigration()
+            .build()
+            database = instance
+            instance
+        }
+    }
+
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Add any necessary schema changes for version 1 to 2
+            database.execSQL("ALTER TABLE automatic_transactions ADD COLUMN description TEXT")
         }
     }
 
     private val MIGRATION_2_3 = object : Migration(2, 3) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("""
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Add any necessary schema changes for version 2 to 3
+        }
+    }
+
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Add any necessary schema changes for version 3 to 4
+        }
+    }
+
+    private val MIGRATION_4_5 = object : Migration(4, 5) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Create budget_goals table
+            database.execSQL("""
                 CREATE TABLE IF NOT EXISTS budget_goals (
                     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                     category TEXT NOT NULL,
                     monthYear TEXT NOT NULL,
                     targetAmount REAL NOT NULL,
-                    createdAt INTEGER NOT NULL,
-                    UNIQUE(category, monthYear)
+                    createdAt INTEGER NOT NULL
                 )
             """)
         }
     }
 
-    private val MIGRATION_3_4 = object : Migration(3, 4) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            // Geçici tablo oluştur
-            db.execSQL(
-                """
-                CREATE TABLE IF NOT EXISTS transactions_new (
-                    transactionId TEXT PRIMARY KEY NOT NULL,
-                    date TEXT NOT NULL,
-                    time TEXT NOT NULL,
-                    description TEXT NOT NULL,
-                    amount REAL NOT NULL,
-                    balance REAL,
-                    bankName TEXT NOT NULL,
-                    category TEXT NOT NULL DEFAULT 'OTHER'
-                )
-            """
-            )
-
-            // Verileri yeni tabloya kopyala
-            db.execSQL(
-                """
-                INSERT OR REPLACE INTO transactions_new 
-                SELECT transactionId, date, time, description, amount, balance, bankName, 'OTHER' 
-                FROM transactions
-            """
-            )
-
-            // Eski tabloyu sil
-            db.execSQL("DROP TABLE transactions")
-
-            // Yeni tabloyu yeniden adlandır
-            db.execSQL("ALTER TABLE transactions_new RENAME TO transactions")
-
-            // Index oluştur
-            db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_transactions_id ON transactions(transactionId)")
-        }
-    }
-
-    private val MIGRATION_4_5 = object : Migration(4, 5) {
-        override fun migrate(db: SupportSQLiteDatabase) {
-            db.execSQL("""
+    private val MIGRATION_5_6 = object : Migration(5, 6) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Drop and recreate budget_goals table
+            database.execSQL("DROP TABLE IF EXISTS budget_goals")
+            database.execSQL("""
                 CREATE TABLE IF NOT EXISTS budget_goals (
                     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                     category TEXT NOT NULL,
                     monthYear TEXT NOT NULL,
                     targetAmount REAL NOT NULL,
-                    createdAt INTEGER NOT NULL,
-                    UNIQUE(category, monthYear)
+                    createdAt INTEGER NOT NULL
+                )
+            """)
+        }
+    }
+
+    private val MIGRATION_6_7 = object : Migration(6, 7) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            // Create automatic_transactions table
+            database.execSQL("""
+                CREATE TABLE IF NOT EXISTS automatic_transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    amount REAL NOT NULL,
+                    description TEXT NOT NULL,
+                    paymentDate INTEGER NOT NULL,
+                    accountId INTEGER NOT NULL,
+                    repeatPeriod TEXT NOT NULL,
+                    isActive INTEGER NOT NULL DEFAULT 1,
+                    FOREIGN KEY(accountId) REFERENCES accounts(id) ON DELETE CASCADE
                 )
             """)
         }
     }
 
     fun getTransactionDao(): TransactionDao {
-        return database?.transactionDao() ?: throw IllegalStateException("Database not initialized")
-    }
-
-    fun getBudgetGoalDao(context: Context): BudgetGoalDao {
-        if (database == null) {
-            initialize(context)
-        }
-        return database?.budgetGoalDao() ?: throw IllegalStateException("Database not initialized")
+        return transactionDao ?: database?.transactionDao()?.also { transactionDao = it }
+            ?: throw IllegalStateException("Database not initialized")
     }
 
     fun getAccountDao(context: Context): AccountDao {
         if (database == null) {
-            initialize(context)
+            getDatabase(context)
         }
         return database?.accountDao() ?: throw IllegalStateException("Database not initialized")
+    }
+
+    fun getAutomaticTransactionDao(): AutomaticTransactionDao {
+        return automaticTransactionDao ?: database?.automaticTransactionDao()?.also { automaticTransactionDao = it }
+            ?: throw IllegalStateException("Database not initialized")
+    }
+
+    fun getBudgetGoalDao(context: Context): BudgetGoalDao {
+        if (database == null) {
+            getDatabase(context)
+        }
+        return budgetGoalDao ?: database?.budgetGoalDao()?.also { budgetGoalDao = it }
+            ?: throw IllegalStateException("Database not initialized")
     }
 }

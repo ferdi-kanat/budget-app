@@ -36,6 +36,15 @@
             android:exported="false"
             android:theme="@style/Theme.Budget" />
         <activity android:name=".ui.AccountsActivity" />
+        <activity
+            android:name=".ui.InstructionsActivity"
+            android:exported="false"
+            android:label="Otomatik İşlemler" />
+        <activity
+            android:name=".ui.AutomaticTransactionsActivity"
+            android:exported="false"
+            android:label="@string/automatic_transactions"
+            android:parentActivityName=".MainActivity" />
     </application>
 
 </manifest>

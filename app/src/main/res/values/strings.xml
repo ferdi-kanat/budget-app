@@ -91,4 +91,18 @@
     <string name="delete_account">Hesabı Sil</string>
     <string name="delete_account_confirmation">%s hesabını silmek istediğinize emin misiniz?</string>
     <string name="account_deleted">Hesap silindi</string>
+    <string name="automatic_transactions">Otomatik İşlemler</string>
+    <string name="no_automatic_transactions">Henüz otomatik işlem yok</string>
+    <string name="add_automatic_transaction">Otomatik İşlem Ekle</string>
+    <string name="add_automatic_transaction_hint">Yeni bir otomatik işlem eklemek için + butonuna tıklayın</string>
+    <string name="empty_state_image">Boş durum görseli</string>
+    <string name="delete_automatic_transaction">Otomatik işlemi sil</string>
+    <string name="delete_automatic_transaction_confirmation">Bu otomatik işlemi silmek istediğinizden emin misiniz?</string>
+    <string name="delete_confirmation">Silme Onayı</string>
+    <string name="yes">Evet</string>
+    <string name="no">Hayır</string>
+    <string name="empty_automatic_transactions">Otomatik İşlem Yok</string>
+    <string name="empty_automatic_transactions_title">Henüz Otomatik İşlem Yok</string>
+    <string name="empty_automatic_transactions_description">Otomatik işlem eklemek için + butonuna tıklayın</string>
+    <string name="active">Aktif</string>
 </resources>

@@ -1,12 +1,9 @@
 package com.example.budget.data.dao
 
+import androidx.room.*
 import com.example.budget.data.entity.BudgetGoalEntity
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Update
+import com.example.budget.data.BudgetProgress
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BudgetGoalDao {
@@ -28,26 +25,26 @@ interface BudgetGoalDao {
     WHERE bg.monthYear = :monthYear
     GROUP BY bg.category
     """)
-    suspend fun getBudgetProgress(monthYear: String): List<BudgetProgress>
+    fun getBudgetProgress(monthYear: String): Flow<List<BudgetProgress>>
+
+    @Query("SELECT * FROM budget_goals ORDER BY createdAt DESC")
+    fun getAllBudgetGoals(): Flow<List<BudgetGoalEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBudgetGoal(budgetGoal: BudgetGoalEntity)
+
+    @Delete
+    suspend fun deleteBudgetGoal(budgetGoal: BudgetGoalEntity)
+
+    @Query("SELECT * FROM budget_goals WHERE monthYear = :monthYear")
+    fun getBudgetGoalsByMonth(monthYear: String): Flow<List<BudgetGoalEntity>>
+
+    @Query("SELECT * FROM budget_goals WHERE category = :category AND monthYear = :monthYear")
+    fun getBudgetGoalByCategoryAndMonth(category: String, monthYear: String): Flow<BudgetGoalEntity?>
 
     @Query("SELECT * FROM budget_goals WHERE monthYear = :monthYear")
     suspend fun getBudgetGoalsForMonth(monthYear: String): List<BudgetGoalEntity>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBudgetGoal(goal: BudgetGoalEntity)
-
-    @Delete
-    suspend fun deleteBudgetGoal(goal: BudgetGoalEntity)
-
     @Update
-    suspend fun updateBudgetGoal(goal: BudgetGoalEntity)
-
-    @Query("SELECT * FROM budget_goals WHERE id = :goalId")
-    suspend fun getBudgetGoalById(goalId: Long): BudgetGoalEntity
+    suspend fun updateBudgetGoal(budgetGoal: BudgetGoalEntity)
 }
-
-data class BudgetProgress(
-    val category: String,
-    val targetAmount: Double,
-    val spentAmount: Double
-)

@@ -32,4 +32,7 @@ interface AccountDao {
 
     @Query("DELETE FROM accounts")
     suspend fun deleteAllAccounts()
+
+    @Query("SELECT * FROM accounts WHERE bankName = :bankName LIMIT 1")
+    suspend fun getAccountByBankName(bankName: String): AccountEntity?
 } 

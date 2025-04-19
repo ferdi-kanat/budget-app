@@ -57,8 +57,11 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.RadioGroup
 import android.widget.AutoCompleteTextView
 import com.example.budget.data.AccountEntity
+import com.example.budget.ui.AutomaticTransactionsActivity
+import com.example.budget.ui.InstructionsActivity
 import com.example.budget.utils.AutoBackupManager
 import com.example.budget.utils.BackupUtils
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
 @Suppress("DEPRECATION")
@@ -236,6 +239,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                    .first() // Collect the Flow to get the List
                     .filter { transaction ->
                         // Apply date filter if exists
                         val matchesDateFilter = if (startDate != null && endDate != null) {
@@ -274,6 +278,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             val filteredTransactions = DatabaseProvider.getTransactionDao()
                 .getAllTransactions()
+                .first() // Collect the Flow to get the List
                 .filter { transaction ->
                     transaction.description.contains(query, ignoreCase = true) ||
                     transaction.amount.toString().contains(query)
@@ -322,7 +327,7 @@ class MainActivity : AppCompatActivity() {
                     data?.data?.let { uri ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
-                                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions().first()
                                 handleExport(uri, transactions)
                                 tempSelectedBank = null
                                 withContext(Dispatchers.Main) {
@@ -341,7 +346,7 @@ class MainActivity : AppCompatActivity() {
                     data?.data?.let { uri ->
                         lifecycleScope.launch(Dispatchers.IO) {
                             try {
-                                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                                val transactions = DatabaseProvider.getTransactionDao().getAllTransactions().first()
                                 BackupUtils.createBackup(this@MainActivity, transactions, uri)
                                 withContext(Dispatchers.Main) {
                                     showSuccess("Yedekleme başarılı")
@@ -375,10 +380,26 @@ class MainActivity : AppCompatActivity() {
                                 transactionsByBank.forEach { (bankName, bankTransactions) ->
                                     when (bankName) {
                                         "VakıfBank" -> {
-                                            createVakifBankAccountIfNeeded(convertToTransactionList(bankTransactions))
+                                            val account = AccountEntity(
+                                                accountId = UUID.randomUUID().toString(),
+                                                accountName = "VakıfBank Hesap",
+                                                bankName = "VakıfBank",
+                                                balance = 0.0, // Will be updated after transactions are inserted
+                                                accountType = "Vadesiz",
+                                                isActive = true
+                                            )
+                                            DatabaseProvider.getAccountDao(this@MainActivity).insertAccount(account)
                                         }
                                         "Bankkart" -> {
-                                            createBankkartAccountIfNeeded(convertToTransactionList(bankTransactions))
+                                            val account = AccountEntity(
+                                                accountId = UUID.randomUUID().toString(),
+                                                accountName = "Ziraat Hesap",
+                                                bankName = "Ziraat",
+                                                balance = 0.0, // Will be updated after transactions are inserted
+                                                accountType = "Vadesiz",
+                                                isActive = true
+                                            )
+                                            DatabaseProvider.getAccountDao(this@MainActivity).insertAccount(account)
                                         }
                                     }
                                 }
@@ -386,8 +407,31 @@ class MainActivity : AppCompatActivity() {
                                 // Insert all transactions
                                 DatabaseProvider.getTransactionDao().insertTransactions(transactions)
                                 
+                                // Update account balances based on transactions
+                                transactionsByBank.forEach { (bankName, bankTransactions) ->
+                                    val totalBalance = bankTransactions.sumOf { transaction ->
+                                        try {
+                                            transaction.amount.toString()
+                                                .replace(".", "")
+                                                .replace(",", ".")
+                                                .toDoubleOrNull() ?: 0.0
+                                        } catch (e: Exception) {
+                                            0.0
+                                        }
+                                    }
+                                    
+                                    // Update the account balance based on the bank name
+                                    val targetBankName = when (bankName) {
+                                        "Bankkart" -> "Ziraat"
+                                        else -> bankName
+                                    }
+                                    
+                                    DatabaseProvider.getAccountDao(this@MainActivity).getAccountByBankName(targetBankName)?.let { account ->
+                                        DatabaseProvider.getAccountDao(this@MainActivity).updateBalance(account.accountId, totalBalance)
+                                    }
+                                }
+                                
                                 withContext(Dispatchers.Main) {
-                                    // Update RecyclerView with new data
                                     refreshRecyclerView()
                                     showSuccess("Geri yükleme başarılı")
                                 }
@@ -736,6 +780,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                    .first() // Collect the Flow to get the List
                 withContext(Dispatchers.Main) {
                     // Update adapter with new data in a single operation
                     transactionAdapter.submitNewData(transactions)
@@ -854,6 +899,7 @@ class MainActivity : AppCompatActivity() {
         // First, get unique bank names from database
         lifecycleScope.launch(Dispatchers.IO) {
             val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                .first() // Collect the Flow to get the List
             val bankNames = transactions.map { it.bankName }.distinct()
 
             withContext(Dispatchers.Main) {
@@ -1052,6 +1098,7 @@ class MainActivity : AppCompatActivity() {
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
                         val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                            .first() // Collect the Flow to get the List
                         val analytics = TransactionAnalytics().analyzeTransactions(transactions)
                         
                         withContext(Dispatchers.Main) {
@@ -1088,6 +1135,7 @@ class MainActivity : AppCompatActivity() {
             "Dışa Aktar",
             "Yedekle/Geri Yükle",
             "Otomatik Yedekleme",
+            "Otomatik İşlemler",
             "Gece Modu",
             "İptal"
         )
@@ -1114,8 +1162,13 @@ class MainActivity : AppCompatActivity() {
                     3 -> showExportDialog()
                     4 -> showBackupRestoreDialog()
                     5 -> showAutoBackupDialog()
-                    6 -> toggleDarkMode()
-                    // 7 -> İptal
+                    6 -> {
+                        // Navigate to Automatic Transactions
+                        val intent = Intent(this, AutomaticTransactionsActivity::class.java)
+                        startActivity(intent)
+                    }
+                    7 -> toggleDarkMode()
+                    // 8 -> İptal
                 }
             }
             .show()

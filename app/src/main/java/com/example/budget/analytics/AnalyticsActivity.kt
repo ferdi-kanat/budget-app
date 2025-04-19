@@ -23,6 +23,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.first
 import android.graphics.Color
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.formatter.DefaultValueFormatter
@@ -358,6 +359,7 @@ class AnalyticsActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val transactions = DatabaseProvider.getTransactionDao().getAllTransactions()
+                    .first() // Collect the Flow to get the List
                 val newAnalytics = TransactionAnalytics().analyzeTransactions(transactions)
                 
                 withContext(Dispatchers.Main) {

@@ -1,68 +1,74 @@
 package com.example.budget.viewmodel
 
-import com.example.budget.data.entity.BudgetGoalEntity
-import android.icu.util.Calendar
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.budget.data.entity.BudgetGoalEntity
+import com.example.budget.data.BudgetProgress
 import com.example.budget.data.dao.BudgetGoalDao
-import com.example.budget.data.dao.BudgetProgress
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class BudgetViewModel(private val budgetGoalDao: BudgetGoalDao) : ViewModel() {
-    private val _budgetProgress = MutableStateFlow<List<BudgetProgress>>(emptyList())
-    val budgetProgress: StateFlow<List<BudgetProgress>> = _budgetProgress.asStateFlow()
+    private val _budgetProgress = MutableLiveData<List<BudgetProgress>>()
+    val budgetProgress: LiveData<List<BudgetProgress>> = _budgetProgress
 
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private val _budgetGoals = MutableLiveData<List<BudgetGoalEntity>>()
+    val budgetGoals: LiveData<List<BudgetGoalEntity>> = _budgetGoals
+    
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?> = _error
 
-    fun saveBudgetGoal(goal: BudgetGoalEntity) {
+    fun saveBudgetGoal(budgetGoal: BudgetGoalEntity) {
         viewModelScope.launch {
             try {
-                budgetGoalDao.insertBudgetGoal(goal)
-                updateBudgetProgress()
+                budgetGoalDao.insertBudgetGoal(budgetGoal)
+                loadBudgetGoals(budgetGoal.monthYear)
             } catch (e: Exception) {
-                _error.value = "Bütçe hedefi kaydedilemedi: ${e.localizedMessage}"
+                _error.value = "Bütçe hedefi kaydedilirken hata oluştu: ${e.message}"
             }
         }
     }
 
+    fun loadBudgetGoals(monthYear: String) {
+        viewModelScope.launch {
+            try {
+                _budgetGoals.value = budgetGoalDao.getBudgetGoalsForMonth(monthYear)
+            } catch (e: Exception) {
+                _error.value = "Bütçe hedefleri yüklenirken hata oluştu: ${e.message}"
+            }
+        }
+    }
+
+    fun loadBudgetProgress(monthYear: String) {
+        viewModelScope.launch {
+            try {
+                _budgetProgress.value = budgetGoalDao.getBudgetProgress(monthYear).first()
+            } catch (e: Exception) {
+                _error.value = "Bütçe ilerlemesi yüklenirken hata oluştu: ${e.message}"
+            }
+        }
+    }
+
+    fun updateBudgetGoal(budgetGoal: BudgetGoalEntity) {
+        viewModelScope.launch {
+            try {
+                budgetGoalDao.updateBudgetGoal(budgetGoal)
+                loadBudgetGoals(budgetGoal.monthYear)
+            } catch (e: Exception) {
+                _error.value = "Bütçe hedefi güncellenirken hata oluştu: ${e.message}"
+            }
+        }
+    }
+    
     fun updateBudgetProgress() {
-        viewModelScope.launch {
-            try {
-                val currentMonth = getCurrentMonthYear()
-                _budgetProgress.value = budgetGoalDao.getBudgetProgress(currentMonth)
-            } catch (e: Exception) {
-                _error.value = "Bütçe bilgileri alınamadı: ${e.localizedMessage}"
-            }
-        }
+        val currentMonthYear = getCurrentMonthYear()
+        loadBudgetProgress(currentMonthYear)
     }
-
+    
     private fun getCurrentMonthYear(): String {
-        val calendar = Calendar.getInstance()
-        return "${calendar.get(Calendar.YEAR)}-${String.format("%02d", calendar.get(Calendar.MONTH) + 1)}"
-    }
-
-    fun deleteBudgetGoal(goal: BudgetGoalEntity) {
-        viewModelScope.launch {
-            try {
-                budgetGoalDao.deleteBudgetGoal(goal)
-                updateBudgetProgress()
-            } catch (e: Exception) {
-                _error.value = "Bütçe hedefi silinemedi: ${e.localizedMessage}"
-            }
-        }
-    }
-    fun updateBudgetGoal(goal: BudgetGoalEntity) {
-        viewModelScope.launch {
-            try {
-                budgetGoalDao.updateBudgetGoal(goal)
-                updateBudgetProgress()
-            } catch (e: Exception) {
-                _error.value = "Bütçe hedefi güncellenemedi: ${e.localizedMessage}"
-            }
-        }
+        val calendar = java.util.Calendar.getInstance()
+        return "${calendar.get(java.util.Calendar.YEAR)}-${String.format("%02d", calendar.get(java.util.Calendar.MONTH) + 1)}"
     }
 }
