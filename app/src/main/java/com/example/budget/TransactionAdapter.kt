@@ -12,7 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class TransactionAdapter(private var transactions: List<TransactionEntity>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -34,14 +35,29 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
 
     private fun groupTransactions() {
         groupedTransactions.clear()
-        transactions.groupBy { it.date }.forEach { (date, transactions) ->
-            groupedTransactions[date] = transactions.sortedByDescending { it.date }
+        
+        // Parse dates and sort transactions in descending order
+        val sortedTransactions = transactions.sortedWith(compareByDescending { transaction ->
+            try {
+                val parts = transaction.date.split(".")
+                val day = parts[0].toInt()
+                val month = parts[1].toInt()
+                val year = parts[2].toInt()
+                year * 10000 + month * 100 + day // Create a sortable integer
+            } catch (e: Exception) {
+                0 // If date parsing fails, put it at the end
+            }
+        })
+        
+        // Group by date and sort transactions within each group by time
+        sortedTransactions.groupBy { it.date }.forEach { (date, transactions) ->
+            groupedTransactions[date] = transactions.sortedWith(compareByDescending { it.time })
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         var currentPosition = 0
-        groupedTransactions.forEach { (date, transactions) ->
+        groupedTransactions.forEach { (_, transactions) ->
             if (position == currentPosition) return TYPE_HEADER
             currentPosition++
             if (position < currentPosition + transactions.size) return TYPE_TRANSACTION
@@ -119,7 +135,7 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
             // Handle any remaining positions
             if (holder is TransactionViewHolder) {
                 val lastGroup = groupedTransactions.values.lastOrNull()
-                if (lastGroup != null && lastGroup.isNotEmpty()) {
+                if (!lastGroup.isNullOrEmpty()) {
                     val lastTransaction = lastGroup.last()
                     bindTransactionViewHolder(holder, lastTransaction)
                 }
@@ -130,7 +146,11 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
     private fun formatDateHeader(date: String): String {
         return try {
             val parsedDate = dateFormat.parse(date)
-            val calendar = Calendar.getInstance().apply { time = parsedDate }
+            val calendar = Calendar.getInstance().apply {
+                if (parsedDate != null) {
+                    time = parsedDate
+                }
+            }
             val dayOfWeek = when (calendar.get(Calendar.DAY_OF_WEEK)) {
                 Calendar.MONDAY -> "Pazartesi"
                 Calendar.TUESDAY -> "Salı"
@@ -191,41 +211,34 @@ class TransactionAdapter(private var transactions: List<TransactionEntity>) :
     }
 
     fun submitNewData(newTransactions: List<TransactionEntity>) {
-        val oldSize = transactions.size
+        val oldTransactions = transactions
         transactions = newTransactions.toList()
+        
+        // Clear the old grouped transactions
+        groupedTransactions.clear()
+        
+        // Group the new transactions
         groupTransactions()
-        if (oldSize > 0) {
-            notifyItemRangeRemoved(0, oldSize)
-        }
-        if (transactions.isNotEmpty()) {
-            notifyItemRangeInserted(0, transactions.size)
-        }
+        
+        // Notify the adapter of the complete data set change
+        notifyDataSetChanged()
     }
 
     fun updateData(newTransactions: List<TransactionEntity>) {
+        val oldTransactions = transactions
         transactions = newTransactions.toList()
+        
+        // Clear the old grouped transactions
+        groupedTransactions.clear()
+        
+        // Group the new transactions
         groupTransactions()
+        
+        // Notify the adapter of the complete data set change
         notifyDataSetChanged()
     }
 
     fun setOnItemClickListener(listener: (TransactionEntity) -> Unit) {
         onItemClickListener = listener
-    }
-
-    private class TransactionDiffCallback(
-        private val oldList: List<TransactionEntity>,
-        private val newList: List<TransactionEntity>
-    ) : DiffUtil.Callback() {
-
-        override fun getOldListSize() = oldList.size
-        override fun getNewListSize() = newList.size
-
-        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition].transactionId == newList[newItemPosition].transactionId
-        }
-
-        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-            return oldList[oldItemPosition] == newList[newItemPosition]
-        }
     }
 }

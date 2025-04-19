@@ -10,12 +10,13 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.Locale
 
 class BackupUtils {
     companion object {
         private const val BACKUP_FILENAME_PREFIX = "budget_backup_"
         private const val BACKUP_EXTENSION = ".json"
-        private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+        private val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale("tr", "TR"))
 
         fun createBackup(context: Context, transactions: List<TransactionEntity>, uri: Uri) {
             try {

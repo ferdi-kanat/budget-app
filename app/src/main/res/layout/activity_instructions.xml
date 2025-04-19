@@ -45,14 +45,14 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Kredi Kartı Ekstresi"
+                        android:text="@string/kredi_kart_ekstresi"
                         android:textAppearance="?attr/textAppearanceHeadline6" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Kredi kartı ekstrenizi yükleyerek dönem borcunuzu ve son ödeme tarihinizi görüntüleyebilirsiniz."
+                        android:text="@string/kredi_kart_ekstrenizi_y_kleyerek_d_nem_borcunuzu_ve_son_deme_tarihinizi_g_r_nt_leyebilirsiniz"
                         android:textAppearance="?attr/textAppearanceBody2" />
 
                     <LinearLayout
@@ -67,7 +67,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1"
-                            android:text="PDF Yükle" />
+                            android:text="@string/pdf_y_kle" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/buttonLoadXLSX"
@@ -75,7 +75,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
-                            android:text="Excel Yükle" />
+                            android:text="@string/excel_y_kle" />
 
                     </LinearLayout>
 
@@ -113,22 +113,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Otomatik İşlem Ekle"
+                        android:text="@string/otomatik_lem_ekle"
                         android:textAppearance="?attr/textAppearanceHeadline6" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Tekrarlanan ödemelerinizi otomatik olarak ekleyebilirsiniz."
+                        android:text="@string/tekrarlanan_demelerinizi_otomatik_olarak_ekleyebilirsiniz"
                         android:textAppearance="?attr/textAppearanceBody2" />
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/amountInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:hint="Tutar">
+                        android:hint="@string/tutar">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextAmount"
@@ -139,11 +138,10 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/descriptionInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Açıklama">
+                        android:hint="@string/a_klama">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextDescription"
@@ -154,11 +152,10 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/dateInputLayout"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Ödeme Tarihi">
+                        android:hint="@string/deme_tarihi">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/editTextDate"
@@ -170,12 +167,17 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/accountInputLayout"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Hesap">
+                        android:hint="@string/hesap">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hesap_se_imi"
+                            android:labelFor="@id/accountDropdown" />
 
                         <AutoCompleteTextView
                             android:id="@+id/accountDropdown"
@@ -186,12 +188,17 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/repeatInputLayout"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Tekrar Sıklığı">
+                        android:hint="@string/tekrar_s_kl">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tekrar_s_kl"
+                            android:labelFor="@id/repeatDropdown" />
 
                         <AutoCompleteTextView
                             android:id="@+id/repeatDropdown"
@@ -206,7 +213,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Kaydet" />
+                        android:text="@string/kaydet" />
 
                 </LinearLayout>
 

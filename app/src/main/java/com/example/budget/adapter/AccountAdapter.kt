@@ -3,7 +3,6 @@ package com.example.budget.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -47,7 +46,6 @@ class AccountAdapter : ListAdapter<AccountEntity, AccountAdapter.AccountViewHold
     }
 
     class AccountViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val imageViewBank: ImageView = itemView.findViewById(R.id.imageViewBank)
         private val textViewAccountName: TextView = itemView.findViewById(R.id.textViewAccountName)
         private val textViewBankName: TextView = itemView.findViewById(R.id.textViewBankName)
         private val textViewAccountType: TextView = itemView.findViewById(R.id.textViewAccountType)

@@ -11,6 +11,13 @@
         android:layout_height="wrap_content"
         android:hint="@string/category">
 
+        <TextView
+            android:id="@+id/categoryLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_category_label"
+            android:labelFor="@id/categoryDropdown" />
+
         <AutoCompleteTextView
             android:id="@+id/categoryDropdown"
             android:layout_width="match_parent"
@@ -33,7 +40,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="numberDecimal"
-            android:textColorHint="#8D6E63" />
+            android:textColorHint="#6D4C41" />
+
 
     </com.google.android.material.textfield.TextInputLayout>
 

@@ -40,7 +40,6 @@ import android.app.Activity
 import android.util.Log
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigationrail.NavigationRailView
-import com.google.android.material.navigation.NavigationBarView
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatDelegate
 import android.content.res.Configuration
@@ -56,14 +55,13 @@ import com.example.budget.ui.AccountsActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.RadioGroup
 import android.widget.AutoCompleteTextView
+import android.widget.RadioButton
 import com.example.budget.data.AccountEntity
 import com.example.budget.data.AutomaticTransaction
 import com.example.budget.data.RepeatPeriod
 import com.example.budget.ui.AutomaticTransactionsActivity
-import com.example.budget.ui.InstructionsActivity
 import com.example.budget.utils.AutoBackupManager
 import com.example.budget.utils.BackupUtils
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
 @Suppress("DEPRECATION")
@@ -245,8 +243,29 @@ class MainActivity : AppCompatActivity() {
                     .filter { transaction ->
                         // Apply date filter if exists
                         val matchesDateFilter = if (startDate != null && endDate != null) {
-                            val transactionDate = transaction.date
-                            transactionDate in startDate!!..endDate!!
+                            try {
+                                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
+                                val transactionDate = dateFormat.parse(transaction.date)
+                                val filterStartDate = startDate?.let { dateFormat.parse(it) }
+                                val filterEndDate = endDate?.let { dateFormat.parse(it) }
+                                
+                                // Add one day to end date to include the entire end date
+                                val calendar = Calendar.getInstance()
+                                if (filterEndDate != null) {
+                                    calendar.time = filterEndDate
+                                }
+                                calendar.add(Calendar.DAY_OF_MONTH, 1)
+                                val inclusiveEndDate = calendar.time
+                                
+                                transactionDate != null && 
+                                filterStartDate != null && 
+                                filterEndDate != null &&
+                                transactionDate >= filterStartDate && 
+                                transactionDate < inclusiveEndDate
+                            } catch (e: Exception) {
+                                Log.e("DATE_FILTER", "Error parsing dates: ${e.message}")
+                                true // If date parsing fails, show the transaction
+                            }
                         } else true
 
                         // Apply search filter if exists
@@ -379,7 +398,7 @@ class MainActivity : AppCompatActivity() {
                                 val transactionsByBank = transactions.groupBy { it.bankName }
                                 
                                 // Create/update accounts based on transactions
-                                transactionsByBank.forEach { (bankName, bankTransactions) ->
+                                transactionsByBank.forEach { (bankName, _) ->
                                     when (bankName) {
                                         "VakıfBank" -> {
                                             val account = AccountEntity(
@@ -460,7 +479,9 @@ class MainActivity : AppCompatActivity() {
         val editTextDescription = dialogView.findViewById<EditText>(R.id.editTextDescription)
         val editTextAmount = dialogView.findViewById<EditText>(R.id.editTextAmount)
         val editTextDate = dialogView.findViewById<EditText>(R.id.editTextDate)
-        val radioGroupType = dialogView.findViewById<RadioGroup>(R.id.radioGroupTransactionType)
+        dialogView.findViewById<RadioGroup>(R.id.radioGroupTransactionType)
+        val radioIncome = dialogView.findViewById<RadioButton>(R.id.radioIncome)
+        val radioExpense = dialogView.findViewById<RadioButton>(R.id.radioExpense)
         val categorySpinner = dialogView.findViewById<AutoCompleteTextView>(R.id.spinnerCategory)
         val buttonSaveTransaction = dialogView.findViewById<Button>(R.id.buttonSaveTransaction)
 
@@ -481,11 +502,24 @@ class MainActivity : AppCompatActivity() {
             showDatePicker(editTextDate)
         }
 
+        // Handle radio button state changes
+        radioIncome.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                radioExpense.isChecked = false
+            }
+        }
+
+        radioExpense.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                radioIncome.isChecked = false
+            }
+        }
+
         buttonSaveTransaction.setOnClickListener {
             val description = editTextDescription.text.toString()
             val amountStr = editTextAmount.text.toString()
             val date = editTextDate.text.toString()
-            val isIncome = radioGroupType.checkedRadioButtonId == R.id.radioIncome
+            val isIncome = radioIncome.isChecked
             val selectedCategory = categories.find { it.displayName == categorySpinner.text.toString() }
                 ?: categories[0]
 
@@ -911,7 +945,7 @@ class MainActivity : AppCompatActivity() {
                                     // Convert date string to timestamp
                                     val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("tr"))
                                     val paymentDate = try {
-                                        dateFormat.parse(lastDate)?.time ?: System.currentTimeMillis()
+                                        lastDate?.let { dateFormat.parse(it)?.time } ?: System.currentTimeMillis()
                                     } catch (e: Exception) {
                                         System.currentTimeMillis()
                                     }
@@ -1139,12 +1173,6 @@ class MainActivity : AppCompatActivity() {
         ).show()
     }
 
-    private interface NavigationActions {
-        fun onAnalyticsSelected()
-        fun onSettingsSelected()
-        fun onBudgetGoalsSelected()
-        fun onAccountsSelected()
-    }
 
     private fun setupNavigationViews() {
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
@@ -1244,21 +1272,40 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAutoBackupDialog() {
         val autoBackupManager = AutoBackupManager(this)
-        val options = arrayOf("Otomatik Yedeklemeyi Başlat", "Otomatik Yedeklemeyi Durdur")
+        val isEnabled = autoBackupManager.isAutoBackupEnabled()
         
         AlertDialog.Builder(this)
             .setTitle("Otomatik Yedekleme")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> {
-                        autoBackupManager.scheduleWeeklyBackup()
-                        showSuccess("Otomatik yedekleme başlatıldı")
-                    }
-                    1 -> {
-                        autoBackupManager.cancelAutoBackup()
-                        showSuccess("Otomatik yedekleme durduruldu")
-                    }
+            .setMessage(
+                if (isEnabled) {
+                    "Otomatik yedekleme aktif durumda.\nHer 7 günde bir gerçekleştirilir.\nYedekler uygulamanın kendi klasöründe saklanır."
+                } else {
+                    "Otomatik yedekleme devre dışı.\nHer 7 günde bir gerçekleştirilir.\nYedekler uygulamanın kendi klasöründe saklanır."
                 }
+            )
+            .setPositiveButton(if (isEnabled) "Otomatik Yedeklemeyi Durdur" else "Otomatik Yedeklemeyi Başlat") { dialog, _ ->
+                if (isEnabled) {
+                    autoBackupManager.cancelAutoBackup()
+                    showSuccess("Otomatik yedekleme durduruldu")
+                } else {
+                    autoBackupManager.scheduleWeeklyBackup()
+                    
+                    // Calculate next backup time
+                    val calendar = Calendar.getInstance().apply {
+                        add(Calendar.DAY_OF_MONTH, 7)
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                    }
+                    val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale("tr"))
+                    val nextBackupTime = dateFormat.format(calendar.time)
+                    
+                    showSuccess("Otomatik yedekleme başlatıldı\nSonraki yedekleme: $nextBackupTime")
+                }
+                dialog.dismiss()
+            }
+            .setNegativeButton("İptal") { dialog, _ ->
+                dialog.dismiss()
             }
             .show()
     }
@@ -1384,17 +1431,4 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(intent, RESTORE_REQUEST_CODE)
     }
 
-    private fun convertToTransactionList(entities: List<TransactionEntity>): List<Transaction> {
-        return entities.map { entity ->
-            Transaction(
-                date = entity.date,
-                time = entity.time,
-                transactionId = entity.transactionId,
-                amount = entity.amount.toString(),
-                balance = entity.balance?.toString() ?: "0.0",
-                description = entity.description,
-                bankName = entity.bankName
-            )
-        }
-    }
 }

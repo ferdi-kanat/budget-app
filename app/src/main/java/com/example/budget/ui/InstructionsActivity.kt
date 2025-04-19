@@ -1,7 +1,9 @@
 package com.example.budget.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,13 +20,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.example.budget.DatabaseProvider
 import com.example.budget.R
 import com.example.budget.data.AutomaticTransaction
 import com.example.budget.data.RepeatPeriod
-import com.example.budget.data.dao.AccountDao
 import com.example.budget.parsers.ExcelParser
 import com.example.budget.parsers.PDFParser
-import com.example.budget.DatabaseProvider
 import com.example.budget.utils.RegexPatterns
 import com.github.mikephil.charting.BuildConfig
 import com.google.android.material.snackbar.Snackbar
@@ -35,8 +36,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
-import android.app.AlertDialog
 
+@Suppress("DEPRECATION")
 class InstructionsActivity : AppCompatActivity() {
 
     private lateinit var textViewResult: TextView
@@ -71,8 +72,8 @@ class InstructionsActivity : AppCompatActivity() {
         editTextAmount = findViewById(R.id.editTextAmount)
         editTextDescription = findViewById(R.id.editTextDescription)
         editTextDate = findViewById(R.id.editTextDate)
-        accountDropdown = findViewById<AutoCompleteTextView>(R.id.accountDropdown)
-        repeatDropdown = findViewById<AutoCompleteTextView>(R.id.repeatDropdown)
+        accountDropdown = findViewById(R.id.accountDropdown)
+        repeatDropdown = findViewById(R.id.repeatDropdown)
         buttonSaveTransaction = findViewById(R.id.buttonSaveTransaction)
     }
 
@@ -212,7 +213,7 @@ class InstructionsActivity : AppCompatActivity() {
                     repeatPeriod = RepeatPeriod.fromString(repeatPeriodStr)
                 )
 
-                val transactionId = DatabaseProvider.getAutomaticTransactionDao().insertTransaction(transaction)
+                DatabaseProvider.getAutomaticTransactionDao().insertTransaction(transaction)
 
                 withContext(Dispatchers.Main) {
                     showSuccess("Otomatik işlem kaydedildi")
@@ -306,6 +307,7 @@ class InstructionsActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun handleCreditCardStatement(bankName: String, pdfText: String) {
         val totalAmount = when (bankName) {
             "VakıfBank" -> findTotalAmountVakif(pdfText)
@@ -340,7 +342,7 @@ class InstructionsActivity : AppCompatActivity() {
                                     // Convert date string to timestamp
                                     val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("tr"))
                                     val paymentDate = try {
-                                        dateFormat.parse(lastDate)?.time ?: System.currentTimeMillis()
+                                        lastDate?.let { dateFormat.parse(it)?.time } ?: System.currentTimeMillis()
                                     } catch (e: Exception) {
                                         System.currentTimeMillis()
                                     }

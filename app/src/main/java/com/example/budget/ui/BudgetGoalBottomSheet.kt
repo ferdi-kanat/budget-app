@@ -110,18 +110,5 @@ class BudgetGoalBottomSheet : BottomSheetDialogFragment() {
         _binding = null
     }
 
-    companion object {
-        const val TAG = "BudgetGoalBottomSheet"
-
-        fun newInstance(goalId: Long, category: String, amount: Double): BudgetGoalBottomSheet {
-            return BudgetGoalBottomSheet().apply {
-                arguments = Bundle().apply {
-                    putLong("goalId", goalId)
-                    putString("category", category)
-                    putDouble("amount", amount)
-                    putBoolean("editMode", true)
-                }
-            }
-        }
-    }
+    companion object
 }

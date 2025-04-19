@@ -12,7 +12,6 @@ import com.example.budget.data.dao.BudgetGoalDao
 object DatabaseProvider {
     private var database: AppDatabase? = null
     private var transactionDao: TransactionDao? = null
-    private var accountDao: AccountDao? = null
     private var automaticTransactionDao: AutomaticTransactionDao? = null
     private var budgetGoalDao: BudgetGoalDao? = null
 
@@ -22,7 +21,7 @@ object DatabaseProvider {
         }
     }
 
-    fun getDatabase(context: Context): AppDatabase {
+    private fun getDatabase(context: Context): AppDatabase {
         return database ?: synchronized(this) {
             val instance = Room.databaseBuilder(
                 context.applicationContext,

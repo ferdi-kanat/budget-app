@@ -4,27 +4,20 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.budget.DatabaseProvider
 import com.example.budget.R
 import com.example.budget.adapters.AutomaticTransactionAdapter
 import com.example.budget.data.AutomaticTransaction
 import com.example.budget.data.dao.AutomaticTransactionDao
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import androidx.activity.viewModels
-import androidx.core.view.isVisible
-import androidx.appcompat.app.AlertDialog
 import com.example.budget.databinding.ActivityAutomaticTransactionsBinding
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class AutomaticTransactionsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAutomaticTransactionsBinding

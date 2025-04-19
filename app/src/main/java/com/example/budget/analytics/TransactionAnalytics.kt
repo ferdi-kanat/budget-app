@@ -1,7 +1,6 @@
 package com.example.budget.analytics
 
 import com.example.budget.TransactionEntity
-import org.apache.commons.math3.util.FastMath.abs
 import java.util.Collections
 
 class TransactionAnalytics {

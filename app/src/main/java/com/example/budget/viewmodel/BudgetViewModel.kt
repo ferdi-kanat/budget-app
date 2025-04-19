@@ -15,8 +15,7 @@ class BudgetViewModel(private val budgetGoalDao: BudgetGoalDao) : ViewModel() {
     val budgetProgress: LiveData<List<BudgetProgress>> = _budgetProgress
 
     private val _budgetGoals = MutableLiveData<List<BudgetGoalEntity>>()
-    val budgetGoals: LiveData<List<BudgetGoalEntity>> = _budgetGoals
-    
+
     private val _error = MutableLiveData<String?>()
     val error: LiveData<String?> = _error
 
@@ -31,7 +30,7 @@ class BudgetViewModel(private val budgetGoalDao: BudgetGoalDao) : ViewModel() {
         }
     }
 
-    fun loadBudgetGoals(monthYear: String) {
+    private fun loadBudgetGoals(monthYear: String) {
         viewModelScope.launch {
             try {
                 _budgetGoals.value = budgetGoalDao.getBudgetGoalsForMonth(monthYear)
@@ -65,6 +64,22 @@ class BudgetViewModel(private val budgetGoalDao: BudgetGoalDao) : ViewModel() {
     fun updateBudgetProgress() {
         val currentMonthYear = getCurrentMonthYear()
         loadBudgetProgress(currentMonthYear)
+    }
+    
+    fun addBudgetGoal(category: String, amount: Double, monthYear: String) {
+        viewModelScope.launch {
+            try {
+                val budgetGoal = BudgetGoalEntity(
+                    category = category,
+                    monthYear = monthYear,
+                    targetAmount = amount
+                )
+                budgetGoalDao.insertBudgetGoal(budgetGoal)
+                loadBudgetProgress(monthYear)
+            } catch (e: Exception) {
+                _error.value = "Bütçe hedefi eklenirken hata oluştu: ${e.message}"
+            }
+        }
     }
     
     private fun getCurrentMonthYear(): String {

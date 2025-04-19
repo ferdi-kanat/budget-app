@@ -10,11 +10,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.budget.R
 import com.example.budget.data.BudgetProgress
 import com.google.android.material.progressindicator.LinearProgressIndicator
+import java.text.NumberFormat
+import java.util.Locale
 
 class BudgetGoalAdapter(
     private val onEditClick: (BudgetProgress) -> Unit,
     private val onDeleteClick: (BudgetProgress) -> Unit
 ) : ListAdapter<BudgetProgress, BudgetGoalAdapter.ViewHolder>(BudgetProgressDiffCallback()) {
+
+    private val formatter = NumberFormat.getCurrencyInstance(Locale("tr", "TR"))
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -39,11 +43,11 @@ class BudgetGoalAdapter(
             progressBar.progress = progress
             spentTextView.text = itemView.context.getString(
                 R.string.spent_amount_format,
-                budgetProgress.spentAmount
+                formatter.format(budgetProgress.spentAmount)
             )
             targetTextView.text = itemView.context.getString(
                 R.string.target_amount_format,
-                budgetProgress.targetAmount
+                formatter.format(budgetProgress.targetAmount)
             )
 
             itemView.setOnClickListener { onEditClick(budgetProgress) }

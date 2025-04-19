@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,18 +15,15 @@ import com.example.budget.MainActivity
 import com.example.budget.R
 import com.example.budget.adapter.BudgetGoalAdapter
 import com.example.budget.analytics.AnalyticsActivity
-import com.example.budget.data.entity.BudgetGoalEntity
 import com.example.budget.data.BudgetProgress
 import com.example.budget.databinding.ActivityBudgetGoalsBinding
 import com.example.budget.viewmodel.BudgetViewModel
 import com.example.budget.viewmodel.BudgetViewModelFactory
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationBarView
-import kotlinx.coroutines.flow.collectLatest
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 class BudgetGoalsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBudgetGoalsBinding
@@ -114,8 +110,8 @@ class BudgetGoalsActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         recyclerView = binding.recyclerViewBudgetGoals
         adapter = BudgetGoalAdapter(
-            onEditClick = { budgetProgress ->
-                showEditDialog(budgetProgress)
+            onEditClick = {
+                showEditDialog()
             },
             onDeleteClick = { budgetProgress ->
                 deleteBudgetGoal(budgetProgress)
@@ -151,11 +147,69 @@ class BudgetGoalsActivity : AppCompatActivity() {
     }
 
     private fun showAddDialog() {
-        // Implementation for showing add dialog
+        val dialogView = layoutInflater.inflate(R.layout.dialog_budget_goal, null)
+        val categoryInput = dialogView.findViewById<TextInputEditText>(R.id.categoryInput)
+        val amountInput = dialogView.findViewById<TextInputEditText>(R.id.amountInput)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.add_budget_goal)
+            .setView(dialogView)
+            .setPositiveButton(R.string.add) { _, _ ->
+                val category = categoryInput.text?.toString()?.trim()
+                val amount = amountInput.text?.toString()?.toDoubleOrNull()
+
+                if (category.isNullOrEmpty() || amount == null) {
+                    Toast.makeText(this, R.string.invalid_input, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                lifecycleScope.launch {
+                    val currentMonthYear = getCurrentMonthYear()
+                    viewModel.addBudgetGoal(category, amount, currentMonthYear)
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
-    private fun showEditDialog(budgetProgress: BudgetProgress) {
-        // Implementation for showing edit dialog
+    private fun showEditDialog() {
+        val selectedItem = adapter.currentList.firstOrNull() ?: return
+        val dialogView = layoutInflater.inflate(R.layout.dialog_budget_goal, null)
+        val categoryInput = dialogView.findViewById<TextInputEditText>(R.id.categoryInput)
+        val amountInput = dialogView.findViewById<TextInputEditText>(R.id.amountInput)
+
+        categoryInput.setText(selectedItem.category)
+        amountInput.setText(selectedItem.targetAmount.toString())
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.edit_budget_goal)
+            .setView(dialogView)
+            .setPositiveButton(R.string.save) { _, _ ->
+                val category = categoryInput.text?.toString()?.trim()
+                val amount = amountInput.text?.toString()?.toDoubleOrNull()
+
+                if (category.isNullOrEmpty() || amount == null) {
+                    Toast.makeText(this, R.string.invalid_input, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                lifecycleScope.launch {
+                    val currentMonthYear = getCurrentMonthYear()
+                    val budgetGoalEntity = DatabaseProvider.getBudgetGoalDao(this@BudgetGoalsActivity)
+                        .getBudgetGoalByCategoryAndMonth(selectedItem.category, currentMonthYear)
+                        .first()
+                    
+                    budgetGoalEntity?.let {
+                        val updatedEntity = it.copy(
+                            category = category,
+                            targetAmount = amount
+                        )
+                        viewModel.updateBudgetGoal(updatedEntity)
+                    }
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun deleteBudgetGoal(budgetProgress: BudgetProgress) {
@@ -178,10 +232,6 @@ class BudgetGoalsActivity : AppCompatActivity() {
     private fun getCurrentMonthYear(): String {
         val calendar = Calendar.getInstance()
         return "${calendar.get(Calendar.YEAR)}-${String.format("%02d", calendar.get(Calendar.MONTH) + 1)}"
-    }
-
-    private fun showMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onResume() {
