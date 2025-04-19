@@ -45,6 +45,14 @@
             android:exported="false"
             android:label="@string/automatic_transactions"
             android:parentActivityName=".MainActivity" />
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false">
+            <meta-data
+                android:name="com.example.budget.utils.WorkManagerInitializer"
+                android:value="androidx.startup" />
+        </provider>
     </application>
 
 </manifest>

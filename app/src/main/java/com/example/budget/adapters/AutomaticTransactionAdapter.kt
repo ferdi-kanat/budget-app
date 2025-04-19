@@ -50,6 +50,7 @@ class AutomaticTransactionAdapter(
                 RepeatPeriod.WEEKLY -> "Her hafta"
                 RepeatPeriod.MONTHLY -> "Her ay"
                 RepeatPeriod.YEARLY -> "Her yıl"
+                RepeatPeriod.ONE_TIME -> "Bir kerelik"
                 else -> "Bilinmeyen periyot"
             }
             

@@ -44,7 +44,7 @@ class AutomaticTransactionsActivity : AppCompatActivity() {
         setupRecyclerView()
         setupEmptyState()
         setupFab()
-        loadAutomaticTransactions()
+        observeTransactions()
     }
 
     private fun setupToolbar() {
@@ -80,18 +80,11 @@ class AutomaticTransactionsActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadAutomaticTransactions() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val transactions = DatabaseProvider.getAutomaticTransactionDao().getAllTransactions().first()
-                withContext(Dispatchers.Main) {
-                    adapter.submitList(transactions)
-                    updateEmptyState(transactions.isEmpty())
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@AutomaticTransactionsActivity, "İşlemler yüklenirken bir hata oluştu", Toast.LENGTH_SHORT).show()
-                }
+    private fun observeTransactions() {
+        lifecycleScope.launch {
+            viewModel.transactions.collectLatest { transactions ->
+                adapter.submitList(transactions)
+                updateEmptyState(transactions.isEmpty())
             }
         }
     }

@@ -35,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
+import android.app.AlertDialog
 
 class InstructionsActivity : AppCompatActivity() {
 
@@ -318,6 +319,72 @@ class InstructionsActivity : AppCompatActivity() {
         }
         textViewResult.text = "Dönem Borcu ($bankName): $totalAmount TL"
         textViewDate.text = "Son Ödeme Tarihi ($bankName): $lastDate"
+
+        // Show dialog to ask if user wants to save as automatic transaction
+        AlertDialog.Builder(this)
+            .setTitle("Otomatik İşlem Olarak Kaydet")
+            .setMessage("Kredi kartı ödemesini otomatik işlem olarak kaydetmek ister misiniz?")
+            .setPositiveButton("Evet") { _, _ ->
+                // First, get available accounts
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val accounts = DatabaseProvider.getAccountDao(this@InstructionsActivity).getAllAccounts().first()
+                        withContext(Dispatchers.Main) {
+                            // Show account selection dialog
+                            val accountNames = accounts.map { it.accountName }.toTypedArray()
+                            AlertDialog.Builder(this@InstructionsActivity)
+                                .setTitle("Hesap Seçin")
+                                .setItems(accountNames) { _, which ->
+                                    val selectedAccount = accounts[which]
+                                    
+                                    // Convert date string to timestamp
+                                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("tr"))
+                                    val paymentDate = try {
+                                        dateFormat.parse(lastDate)?.time ?: System.currentTimeMillis()
+                                    } catch (e: Exception) {
+                                        System.currentTimeMillis()
+                                    }
+
+                                    // Create automatic transaction
+                                    val automaticTransaction = AutomaticTransaction(
+                                        amount = totalAmount?.replace("TL", "")?.trim()?.toDoubleOrNull() ?: 0.0,
+                                        description = "$bankName Kredi Kartı Ödemesi",
+                                        paymentDate = paymentDate,
+                                        accountId = try {
+                                            selectedAccount.accountId.toLong()
+                                        } catch (e: NumberFormatException) {
+                                            selectedAccount.accountName.hashCode().toLong()
+                                        },
+                                        repeatPeriod = RepeatPeriod.ONE_TIME,
+                                        isActive = true
+                                    )
+
+                                    // Save to database
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        try {
+                                            DatabaseProvider.getAutomaticTransactionDao().insertTransaction(automaticTransaction)
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(this@InstructionsActivity, "Otomatik işlem kaydedildi", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(this@InstructionsActivity, "Otomatik işlem kaydedilemedi: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                }
+                                .setNegativeButton("İptal", null)
+                                .show()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@InstructionsActivity, "Hesaplar yüklenirken hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Hayır", null)
+            .show()
     }
 
     private fun findTotalAmountVakif(text: String): String? {

@@ -57,6 +57,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.RadioGroup
 import android.widget.AutoCompleteTextView
 import com.example.budget.data.AccountEntity
+import com.example.budget.data.AutomaticTransaction
+import com.example.budget.data.RepeatPeriod
 import com.example.budget.ui.AutomaticTransactionsActivity
 import com.example.budget.ui.InstructionsActivity
 import com.example.budget.utils.AutoBackupManager
@@ -888,6 +890,72 @@ class MainActivity : AppCompatActivity() {
         }
         textViewResult.text = "Dönem Borcu ($bankName): $totalAmount TL"
         textViewDate.text = "Son Ödeme Tarihi ($bankName): $lastDate"
+
+        // Show dialog to ask if user wants to save as automatic transaction
+        AlertDialog.Builder(this)
+            .setTitle("Otomatik İşlem Olarak Kaydet")
+            .setMessage("Kredi kartı ödemesini otomatik işlem olarak kaydetmek ister misiniz?")
+            .setPositiveButton("Evet") { _, _ ->
+                // First, get available accounts
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val accounts = DatabaseProvider.getAccountDao(this@MainActivity).getAllAccounts().first()
+                        withContext(Dispatchers.Main) {
+                            // Show account selection dialog
+                            val accountNames = accounts.map { it.accountName }.toTypedArray()
+                            AlertDialog.Builder(this@MainActivity)
+                                .setTitle("Hesap Seçin")
+                                .setItems(accountNames) { _, which ->
+                                    val selectedAccount = accounts[which]
+                                    
+                                    // Convert date string to timestamp
+                                    val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale("tr"))
+                                    val paymentDate = try {
+                                        dateFormat.parse(lastDate)?.time ?: System.currentTimeMillis()
+                                    } catch (e: Exception) {
+                                        System.currentTimeMillis()
+                                    }
+
+                                    // Create automatic transaction
+                                    val automaticTransaction = AutomaticTransaction(
+                                        amount = totalAmount?.replace("TL", "")?.trim()?.toDoubleOrNull() ?: 0.0,
+                                        description = "$bankName Kredi Kartı Ödemesi",
+                                        paymentDate = paymentDate,
+                                        accountId = try {
+                                            selectedAccount.accountId.toLong()
+                                        } catch (e: NumberFormatException) {
+                                            selectedAccount.accountName.hashCode().toLong()
+                                        },
+                                        repeatPeriod = RepeatPeriod.ONE_TIME,
+                                        isActive = true
+                                    )
+
+                                    // Save to database
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        try {
+                                            DatabaseProvider.getAutomaticTransactionDao().insertTransaction(automaticTransaction)
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(this@MainActivity, "Otomatik işlem kaydedildi", Toast.LENGTH_SHORT).show()
+                                            }
+                                        } catch (e: Exception) {
+                                            withContext(Dispatchers.Main) {
+                                                Toast.makeText(this@MainActivity, "Otomatik işlem kaydedilemedi: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                }
+                                .setNegativeButton("İptal", null)
+                                .show()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@MainActivity, "Hesaplar yüklenirken hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Hayır", null)
+            .show()
     }
     /*private fun handleBankTransactions(bankName: String, pdfText: String) {
         val transactions = extractTransactions(pdfText)
