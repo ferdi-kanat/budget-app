@@ -34,6 +34,22 @@
   * Clean separation of concerns using ViewModel, LiveData, and Repository patterns.
   * Dependency Injection via Hilt.
 
+## ScreenShots
+<img width="335" height="706" alt="image" src="https://github.com/user-attachments/assets/7746eedb-ccbd-42b1-ad4b-eb1ebfc150b6" />
+
+<img width="249" height="526" alt="image" src="https://github.com/user-attachments/assets/4a395926-9d50-4493-98db-1da43ba45944" />
+
+<img width="272" height="573" alt="image" src="https://github.com/user-attachments/assets/a37fec83-f171-4ec3-a186-168276a59e9f" />
+
+<img width="236" height="499" alt="image" src="https://github.com/user-attachments/assets/b94705c4-946b-49fc-b57a-8eff662f4fcf" />
+
+<img width="321" height="678" alt="image" src="https://github.com/user-attachments/assets/1303361f-3b71-4504-8a46-772a4e16a153" />
+
+<img width="345" height="727" alt="image" src="https://github.com/user-attachments/assets/c8ba47d7-8d27-422e-9a13-67b552eba274" />
+
+<img width="289" height="609" alt="image" src="https://github.com/user-attachments/assets/a364574e-a515-4bd0-b114-4a11b76adb2c" />
+
+
 ## Project Structure
 
 ```
