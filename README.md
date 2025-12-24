@@ -1,5 +1,23 @@
 # Budget App
 
+[![Build APK](https://github.com/ferdi-kanat/budget-app/actions/workflows/build-apk.yml/badge.svg)](https://github.com/ferdi-kanat/budget-app/actions/workflows/build-apk.yml)
+
+## Download APK
+
+You can download the latest APK files without needing Android Studio:
+
+1. Go to the [Actions](https://github.com/ferdi-kanat/budget-app/actions/workflows/build-apk.yml) tab
+2. Click on the latest successful workflow run
+3. Download the APK from the "Artifacts" section:
+   - **app-debug** - Debug version for testing
+   - **app-release** - Release version (unsigned)
+
+Alternatively, trigger a new build:
+1. Go to the [Actions](https://github.com/ferdi-kanat/budget-app/actions/workflows/build-apk.yml) tab
+2. Click "Run workflow" button
+3. Wait for the build to complete
+4. Download the APK from the artifacts
+
 ## Overview
 
 **Budget App** is a Kotlin-based mobile application developed using Android Studio. Designed as a final year capstone project, it aims to simplify personal finance management by enabling users to track, analyze, and plan their financial activities through a modern, modular, and user-friendly mobile interface. The app is tailored to support local banking needs, with advanced support for Turkish banks like **Ziraat Bank** and **VakıfBank**, allowing users to parse PDF and Excel bank statements into structured financial data.
